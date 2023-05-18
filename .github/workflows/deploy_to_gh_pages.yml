@@ -1,4 +1,4 @@
-name: Build and deplpoy Troubadour game on github pages
+name: Build and deploy Troubadour game on github pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -30,7 +30,11 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Install repo in editable mode
-        run: pip --version && python --version && pip install -e .
+        run:
+          pip --version
+          python --version
+          pip show setuptools
+          pip install -e .
       - name: Generate static site
         run: troubadour
       - name: website archive
