@@ -30,7 +30,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Install repo in editable mode
-        run: pip install -e .
+        run: pip --version && python --version && pip install -e .
       - name: Generate static site
         run: troubadour
       - name: website archive
