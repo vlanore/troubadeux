@@ -1,13 +1,15 @@
+from pathlib import Path
+
 import click
 from jinja2 import Environment, PackageLoader
 
 
 @click.command()
-@click.option("-f", "--flag", is_flag=True)
-def main(flag: bool):
+@click.option("-p", "--path", default="./_site")
+def main(path: str) -> None:
     environment = Environment(loader=PackageLoader("troubadour"))
     main_template = environment.get_template("main.html.j2")
 
-    f = open("index.html", "w")
-    f.write(main_template.render(message="Hello world!!!"))
-    f.close()
+    main_path = Path(path) / "index.html"
+    main_source = main_template.render(message="Hello world!!!")
+    main_path.write_text(main_source)
