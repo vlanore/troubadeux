@@ -2,6 +2,9 @@
 requires = ["setuptools>=64.0"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+include = ["troubadour"]
+
 [project]
 name = "troubadeux"
 version = "0.0.1"
@@ -16,6 +19,7 @@ classifiers = [
 ]
 dependencies = [
     "click",
+    "jinja2",
 ]
 
 [project.scripts]
