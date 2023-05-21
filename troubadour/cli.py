@@ -1,11 +1,23 @@
 from pathlib import Path
 import shutil
+import subprocess
 
 import click
 from jinja2 import Environment, PackageLoader
 
 
-@click.command()
+@click.group()
+def main():
+    pass
+
+
+@main.command()
+@click.option("-p", "--port", type=int, default=8765)
+def server(port: int):
+    subprocess.run("python -m http.server 8765", shell=True)
+
+
+@main.command()
 @click.option("-p", "--path", default="./_site", help="Path to store project files.")
 @click.option(
     "-e",
@@ -14,7 +26,7 @@ from jinja2 import Environment, PackageLoader
     help="Location of the main file of the project, relative to the source directory.",
 )
 @click.argument("src")
-def main(path: str, entry_point: str, src: str) -> None:
+def build(path: str, entry_point: str, src: str) -> None:
     """Generates the files for your troubadour project."""
 
     # Paths
