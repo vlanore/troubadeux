@@ -1,6 +1,12 @@
+# python stuff
 *.egg-info
 *.pyc
 __pycache__
-index.html
+.mypy_cache
+
+# editor stuff
 .vscode
+
+# troubadour stuff
+index.html
 _site
