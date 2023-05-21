@@ -44,11 +44,13 @@ def build(path: str, entry_point: str, src: str) -> None:
     toml_file_list = ", ".join(f'"{p.relative_to(src_dir)}"' for p in sources)
     toml_source = f"[[fetch]]\nfiles = [{toml_file_list}]"
 
+    # Make dest folder
+    output_path.mkdir(parents=True, exist_ok=True)
+
     # Copy source files
     for f in sources:
         shutil.copyfile(f, output_path / (f.relative_to(src_dir)))
 
     # Write to files
-    output_path.mkdir(parents=True, exist_ok=True)
     main_html_path.write_text(main_source)
     toml_path.write_text(toml_source)
