@@ -1,6 +1,7 @@
-from pathlib import Path
+from importlib.util import find_spec
 import shutil
 import subprocess
+from pathlib import Path
 
 import click
 from jinja2 import Environment, PackageLoader
@@ -40,19 +41,40 @@ def build(path: str, entry_point: str, src: str) -> None:
     main_html_path = output_path / "index.html"
     toml_path = output_path / "config.toml"
 
+    # Copy troubadour lib to dest folder
+    troubadour_dest_dir = output_path / "troubadour"
+    troubadour_dest_dir.mkdir(parents=True)
+    troubadour_spec = find_spec("troubadour")
+    assert troubadour_spec is not None and troubadour_spec.origin is not None
+    troubadour_module_dir = Path(troubadour_spec.origin).parent
+
+    troubadour_files = troubadour_module_dir.rglob("*.py")
+    troubadour_filtered_files = [
+        f for f in troubadour_files if str(f)[:5] != "__pyc" and "cli.py" not in str(f)
+    ]
+    for f in troubadour_filtered_files:
+        shutil.copyfile(f, troubadour_dest_dir / f.relative_to(troubadour_module_dir))
+    troubadour_files_to_fetch = [
+        troubadour_dest_dir / f.relative_to(troubadour_module_dir)
+        for f in troubadour_filtered_files
+    ]
+
     # Generate file contents from Jinja templates
     environment = Environment(loader=PackageLoader("troubadour"))
     main_template = environment.get_template("main.html.j2")
     main_source = main_template.render(entrypoint=entry_point)
-    toml_file_list = ", ".join(f'"{p.relative_to(src_dir)}"' for p in sources)
-    toml_source = f"[[fetch]]\nfiles = [{toml_file_list}]"
+    toml_file_list = ",\n    ".join(
+        [f'"{p.relative_to(src_dir)}"' for p in sources]
+        + [f'"{p.relative_to(output_path)}"' for p in troubadour_files_to_fetch]
+    )
+    toml_source = f"[[fetch]]\nfiles = [\n    {toml_file_list}\n]"
 
     # Make dest folder
     output_path.mkdir(parents=True, exist_ok=True)
 
     # Copy source files
     for f in sources:
-        shutil.copyfile(f, output_path / (f.relative_to(src_dir)))
+        shutil.copyfile(f, output_path / f.relative_to(src_dir))
 
     # Write to files
     main_html_path.write_text(main_source)
