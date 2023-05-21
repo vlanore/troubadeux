@@ -6,9 +6,8 @@
 </head>
 
 <body>
-    <py-script>
-        print("{{ message }}")
-    </py-script>
+    <py-config trype="toml" src="./config.toml"></py-config>
+    <py-script src="{{ entrypoint }}">    </py-script>
 </body>
 
 </html>
