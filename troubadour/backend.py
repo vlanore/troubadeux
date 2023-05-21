@@ -1,5 +1,5 @@
 import pyscript  # type:ignore
-import js
+from pyscript import display  # type:ignore
 
 
 def pyscript_version() -> str:
@@ -8,4 +8,9 @@ def pyscript_version() -> str:
 
 
 def add_to_body(text: str) -> None:
-    pyscript.Element("body").write(text, append=True)
+    """Add text to the end of the document body.
+
+    Arguments:
+        * text (`str`): the text to add.
+    """
+    display(text, append=True, target="body")
