@@ -11,12 +11,15 @@ def main():
     pass
 
 
+# -~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~
 @main.command()
 @click.option("-p", "--port", type=int, default=8765)
 def server(port: int):
-    subprocess.run("python -m http.server 8765", shell=True)
+    "Runs a development server for a locally built project."
+    subprocess.run("cd _site && python -m http.server 8765", shell=True)
 
 
+# -~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~
 @main.command()
 @click.option("-p", "--path", default="./_site", help="Path to store project files.")
 @click.option(
