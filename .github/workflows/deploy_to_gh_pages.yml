@@ -38,7 +38,7 @@ jobs:
           pip show setuptools &&
           pip install -e .
       - name: Generate static site
-        run: troubadour
+        run: troubadour examples/ -e demo.py
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
 
