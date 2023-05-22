@@ -106,14 +106,14 @@ class TypedLocalStorage(Generic[T]):
     def __init__(self, cls: Type[T]) -> None:
         self.cls = cls
 
-    def __getitem__(self, key: str) -> Optional[T]:
+    def __getitem__(self, key: str) -> T:
         result = js.localStorage.getItem(key)
         if result is not None:
             decoded_result = jsp.decode(result)
             assert isinstance(decoded_result, self.cls)
             return decoded_result
         else:
-            return None
+            raise KeyError()
 
 
 local_storage = LocalStorage()
