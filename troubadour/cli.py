@@ -70,7 +70,9 @@ def build(path: str, entry_point: str, src: str) -> None:
         [f'"{p.relative_to(src_dir)}"' for p in sources]
         + [f'"{p.relative_to(output_path)}"' for p in troubadour_files_to_fetch]
     )
-    toml_source = f"[[fetch]]\nfiles = [\n    {toml_file_list}\n]"
+    toml_source = (
+        f'packages = ["jsonpickle"]\n\n[[fetch]]\nfiles = [\n    {toml_file_list}\n]'
+    )
 
     # Make dest folder
     output_path.mkdir(parents=True, exist_ok=True)
