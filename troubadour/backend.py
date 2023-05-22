@@ -84,6 +84,9 @@ class LocalStorage:
     def __setitem__(self, key: str, value: Any) -> None:
         js.localStorage.setItem(key, jsp.encode(value))
 
+    def has_key(self, key: str) -> bool:
+        return self[key] is not None
+
     def __call__(self, cls: Type[T]) -> "TypedLocalStorage[T]":
         """Helper interface to provided typed access to local storage. Usage is
         local_storage(cls)[key].
