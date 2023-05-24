@@ -6,13 +6,15 @@ from pyodide.ffi import create_proxy  # type: ignore
 from pyscript import Element  # type: ignore
 from pyscript import js  # type: ignore
 
+from troubadour.definitions import ElementId
+
 
 def pyscript_version() -> str:
     "Returns the version of pyscript currently running."
     return pyscript.__version__
 
 
-def onclick(id: str, func: Callable[[Any], None]) -> None:
+def onclick(id: ElementId, func: Callable[[Any], None]) -> None:
     """Add on click callback to element.
 
     Args:
@@ -22,51 +24,51 @@ def onclick(id: str, func: Callable[[Any], None]) -> None:
     Element(id).element.addEventListener("click", create_proxy(func))
 
 
-def onload(id: str, func: Callable[[Any], None]) -> None:
+def onload(id: ElementId, func: Callable[[Any], None]) -> None:
     Element(id).element.addEventListener("load", create_proxy(func))
 
 
-def insert_end(id: str, html: str) -> None:
+def insert_end(id: ElementId, html: str) -> None:
     Element(id).element.insertAdjacentHTML("beforeend", html)
 
 
-def set_html(id: str, html: str) -> None:
+def set_html(id: ElementId, html: str) -> None:
     Element(id).element.innerHTML = html
 
 
-def clear(id: str) -> None:
+def clear(id: ElementId) -> None:
     set_html(id, "")
 
 
-def click(id: str) -> None:
+def click(id: ElementId) -> None:
     Element(id).element.click()
 
 
-def set_src(id: str, value: str) -> None:
+def set_src(id: ElementId, value: str) -> None:
     Element(id).element.src = value
 
 
-def set_alt(id: str, value: str) -> None:
+def set_alt(id: ElementId, value: str) -> None:
     Element(id).element.alt = value
 
 
-def get_value(id: str) -> str:
+def get_value(id: ElementId) -> str:
     return Element(id).element.value
 
 
-def add_class(id: str, cls: str) -> None:
+def add_class(id: ElementId, cls: str) -> None:
     Element(id).add_class(cls)
 
 
-def remove_class(id: str, cls: str) -> None:
+def remove_class(id: ElementId, cls: str) -> None:
     Element(id).remove_class(cls)
 
 
-def set_display(id: str, display: str) -> None:
+def set_display(id: ElementId, display: str) -> None:
     Element(id).element.style.display = display
 
 
-def scroll_to_bottom(id: str) -> None:
+def scroll_to_bottom(id: ElementId) -> None:
     tgt = Element(id).element
     tgt.scrollTop = tgt.scrollHeight
 
