@@ -1,4 +1,32 @@
+from dataclasses import dataclass
 import troubadour.backend as be
+import troubadour.definitions as df
+from troubadour.definitions import Context, ElementId
+from troubadour.run import run
+
+
+@dataclass
+class Button(df.Continuation):
+    txt: str
+    passage: df.Passage
+
+    def setup(self, target: ElementId, context: Context) -> None:
+        be.insert_end(target, f"<button type='button' id='but'>{self.txt}</button>")
+        be.onclick("but", lambda _: run(self.passage, df.Context(None)))
+
+
+def my_passage(context: df.Context) -> df.Continuation:
+    print("Hello")
+    return Button("Click", my_other_passage)
+
+
+def my_other_passage(context: df.Context) -> df.Continuation:
+    print("Hi")
+    return Button("Clack", my_passage)
+
+
+run(my_passage, df.Context(None))
+
 
 print(f"Advanced demo, running pyscript {be.pyscript_version()}")
 be.insert_end("body", "<h1>Hello</h1>\n")
@@ -7,11 +35,3 @@ if be.local_storage.has_key("hello"):
     hello = be.local_storage(int)["hello"]
     be.insert_end("body", f"<div>Hello: <b>{hello}</b></div>")
     be.local_storage["hello"] = hello + 1
-
-
-def f(_) -> None:
-    be.insert_end("body", "<div>hello</div>")
-
-
-be.insert_end("body", "<button type='button' id='but'>Click!</button>")
-be.onclick("but", f)
