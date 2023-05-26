@@ -19,7 +19,9 @@ class Button(df.Continuation):
 
 def my_passage(context: Context) -> df.Continuation:
     print("Hello")
-    return Button("Click", my_other_passage)
+    return df.ContinuationList(
+        Button("Click", my_other_passage), Button("Clack", my_passage)
+    )
 
 
 def my_other_passage(context: Context) -> df.Continuation:

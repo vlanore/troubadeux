@@ -20,6 +20,16 @@ class Continuation(Protocol):
 
 
 @dataclass
+class ContinuationList(Continuation):
+    def __init__(self, *continuations: Continuation):
+        self.lst = [*continuations]
+
+    def setup(self, target: ElementId, state: State = empty_state) -> None:
+        for cont in self.lst:
+            cont.setup(target, state)
+
+
+@dataclass
 class Context:
     state: State = empty_state
     args: tuple = ()
