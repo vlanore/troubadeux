@@ -66,13 +66,15 @@ def build(path: str, entry_point: str, src: str) -> None:
     environment = Environment(loader=PackageLoader("troubadour"))
     main_template = environment.get_template("main.html.j2")
     main_source = main_template.render(entrypoint=entry_point)
+
+    toml_template = environment.get_template("config.toml.j2")
+    package_list = ["jsonpickle"]
+    toml_package_list = ",\n    ".join(f'"{package}"' for package in package_list)
     toml_file_list = ",\n    ".join(
         [f'"{p.relative_to(src_dir)}"' for p in sources]
         + [f'"{p.relative_to(output_path)}"' for p in troubadour_files_to_fetch]
     )
-    toml_source = (
-        f'packages = ["jsonpickle"]\n\n[[fetch]]\nfiles = [\n    {toml_file_list}\n]'
-    )
+    toml_source = toml_template.render(packages=toml_package_list, fetch=toml_file_list)
 
     # Make dest folder
     output_path.mkdir(parents=True, exist_ok=True)
