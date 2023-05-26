@@ -11,10 +11,10 @@ class Button(df.Continuation):
     txt: str
     passage: df.Passage
 
-    def setup(self, target: ElementId, context: Context) -> None:
+    def setup(self, target: ElementId, state: df.State = df.empty_state) -> None:
         id = get_unique_element_id("button")
         be.insert_end(target, f"<button type='button' id='{id}'>{self.txt}</button>")
-        be.onclick(id, lambda _: run(self.passage, Context(None)))
+        be.onclick(id, lambda _: run(self.passage, Context()))
 
 
 def my_passage(context: Context) -> df.Continuation:
@@ -27,7 +27,7 @@ def my_other_passage(context: Context) -> df.Continuation:
     return Button("Clack", my_passage)
 
 
-run(my_passage, Context(None))
+run(my_passage, Context())
 
 
 print(f"Advanced demo, running pyscript {be.pyscript_version()}")
