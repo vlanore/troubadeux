@@ -1,10 +1,12 @@
+"Module that provides many functions to interact with the web page."
+
 from typing import Any, Callable, Generic, Optional, Type, TypeVar
 
+import js  # type: ignore
 import jsonpickle as jsp
 import pyscript
 from pyodide.ffi import create_proxy  # type: ignore
 from pyscript import Element  # type: ignore
-from pyscript import js  # type: ignore
 
 from troubadour.definitions import ElementId
 

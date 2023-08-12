@@ -13,15 +13,16 @@ def main():
 
 
 # -~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~
-@main.command()
+@main.command(short_help="Runs a development server for a locally built project.")
 @click.option("-p", "--port", type=int, default=8765)
 def server(port: int):
-    "Runs a development server for a locally built project."
+    """Runs a development server for a locally built project
+    (expects _site folder to be present)."""
     subprocess.run("cd _site && python -m http.server 8765", shell=True)
 
 
 # -~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~
-@main.command()
+@main.command(short_help="Generates the files for your troubadour project.")
 @click.option("-p", "--path", default="./_site", help="Path to store project files.")
 @click.option(
     "-e",
@@ -31,7 +32,8 @@ def server(port: int):
 )
 @click.argument("src")
 def build(path: str, entry_point: str, src: str) -> None:
-    """Generates the files for your troubadour project."""
+    """Generates the files for your troubadour project. Needs SRC, the path to the
+    directory containing the project source files."""
 
     # Paths
     src_dir = Path(src)
