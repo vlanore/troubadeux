@@ -6,10 +6,12 @@ ElementId = NewType("ElementId", str)
 
 
 class State:
+    "Game state 'tag' class that states need to inherit from."
     ...
 
 
 empty_state = State()
+"An empty game state (e.g., to use as a default value)."
 
 
 @dataclass
