@@ -7,21 +7,16 @@ include = ["troubadour"]
 
 [project]
 name = "troubadeux"
-authors = [{ name="Vincent Lanore", email="vincent.lanore@gmail.com" }]
+authors = [{ name = "Vincent Lanore", email = "vincent.lanore@gmail.com" }]
 description = "A small example package"
 requires-python = ">=3.10"
-classifiers = [
-    "Programming Language :: Python :: 3",
-]
-dependencies = [
-    "click",
-    "jinja2",
-]
+classifiers = ["Programming Language :: Python :: 3"]
+dependencies = ["click", "jinja2"]
 dynamic = ["version", "readme"]
 
 [tool.setuptools.dynamic]
-readme = {file = ["README.md"]}
-version = {attr = "troubadour.VERSION"}
+readme = { file = ["README.md"] }
+version = { attr = "troubadour.VERSION" }
 
 [project.scripts]
-troubadour = "troubadour.cli:main"
+troubadour = "troubadour.app.cli:main"

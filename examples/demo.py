@@ -5,14 +5,14 @@ from troubadour.run import run
 from troubadour.continuations import Button, ContinuationList
 
 
-def my_passage(context: Context) -> df.Continuation:
+def my_passage(_context: Context) -> df.Continuation:
     print("Hello")
     return ContinuationList(
         Button("Click", my_other_passage), Button("Clack", my_passage)
     )
 
 
-def my_other_passage(context: Context) -> df.Continuation:
+def my_other_passage(_context: Context) -> df.Continuation:
     print("Hi")
     return Button("Clack", my_passage)
 
