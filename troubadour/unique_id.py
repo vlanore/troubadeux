@@ -26,10 +26,14 @@ def get_unique_id() -> int:
 
 
 def get_unique_element_id(name: str = "") -> ElementId:
-    """Returns a unique troubadour string identifier of the form "troubadour_XY"
+    """Returns a unique troubadour element id of the form "troubadour__XY"
     where X is the optional `name` argument, and Y is a unique integer.
+
+    For example, if `name` is "button", this function might
+    return the unique identifier `ElementId("troubadour__button17")`.
 
     Args:
         - name (`str`): optional name for identifier sub-category."""
+
     to_insert = name + "__" if name != "" else ""
     return ElementId(f"troubadour__{to_insert}{get_unique_id()}")

@@ -23,7 +23,8 @@ run(my_passage, Context())
 print(f"Advanced demo, running pyscript {be.pyscript_version()}")
 be.insert_end(ElementId("body"), "<h1>Hello</h1>\n")
 be.insert_end(ElementId("body"), f"world!! {be.local_storage.has_key('hello')}")
-if be.local_storage.has_key("hello"):
-    hello = be.local_storage(int)["hello"]
-    be.insert_end(ElementId("body"), f"<div>Hello: <b>{hello}</b></div>")
-    be.local_storage["hello"] = hello + 1
+if not be.local_storage.has_key("hello"):
+    be.local_storage["hello"] = 0
+hello = be.local_storage(int)["hello"]
+be.insert_end(ElementId("body"), f"<div>Hello: <b>{hello}</b></div>")
+be.local_storage["hello"] = hello + 1
