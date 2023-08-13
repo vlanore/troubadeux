@@ -1,9 +1,9 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import troubadour.backend as be
 from troubadour.definitions import (
     Context,
-    Continuation,
+    Interface,
     ElementId,
     Passage,
     empty_context,
@@ -12,8 +12,8 @@ from troubadour.run import run
 from troubadour.unique_id import get_unique_element_id
 
 
-class ContinuationList:
-    def __init__(self, *continuations: Continuation):
+class InterfaceSequence:
+    def __init__(self, *continuations: Interface):
         self.lst = [*continuations]
 
     def setup(self, target: ElementId, context: Context = empty_context) -> None:
@@ -22,9 +22,10 @@ class ContinuationList:
 
 
 @dataclass
-class Button(Continuation):
+class Button(Interface):
     txt: str
     passage: Passage
+    args: dict[str, object] = field(default_factory=dict)
 
     def setup(self, target: ElementId, context: Context = empty_context) -> None:
         id = get_unique_element_id("button")

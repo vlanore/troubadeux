@@ -17,18 +17,17 @@ empty_state = State()
 @dataclass
 class Context:
     state: State = empty_state
-    args: tuple = ()
-    kwargs: dict[str, Any] = field(default_factory=dict)
+    args: dict[str, Any] = field(default_factory=dict)
 
 
 empty_context = Context(state=empty_state)
 
 
-class Continuation(Protocol):
+class Interface(Protocol):
     "Inputs are user interface elements"
 
     def setup(self, target: ElementId, context: Context = empty_context) -> None:
         ...
 
 
-Passage = Callable[[Context], Continuation]
+Passage = Callable[[Context], Interface]
