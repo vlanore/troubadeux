@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Any, Callable, NewType, Protocol
+from typing import Any, Callable, NewType, Protocol, TypeVar, Generic
 
 ElementId = NewType("ElementId", str)
 "Id of an element on the page (typically, a HTML tag)."
@@ -13,10 +13,12 @@ class State:
 empty_state = State()
 "An empty game state (e.g., to use as a default value)."
 
+T = TypeVar("T")
+
 
 @dataclass
-class Context:
-    state: State = empty_state
+class Context(Generic[T]):
+    state: T
     args: dict[str, Any] = field(default_factory=dict)
 
 
