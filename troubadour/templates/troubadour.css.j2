@@ -1,21 +1,30 @@
 body {
+    margin: 0;
+}
+
+#box {
     margin: 0px auto 0px auto;
-    width:600px;
+    width: 600px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+#menu {
+    border: solid 2px green;
+    padding: 10px;
+    margin: 0 5px 5px 5px;
 }
 
 #output {
-    border: solid 2px red;
-    margin: 5px;
     padding: 10px;
-    height: calc(100% - 162px);
     overflow: auto;
+    flex-grow: 1;
 }
 
 #input {
-    border: solid 2px blue;
-    margin: 5px;
+    border-top: dashed 1.3px lightgray;
     padding: 10px;
-    height: 100px;
     text-align: center;
 }
 
