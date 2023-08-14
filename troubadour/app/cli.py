@@ -46,6 +46,7 @@ def build(path: str, entry_point: str, src: str) -> None:
     print(f"Output folder is {output_path}")
     main_html_path = output_path / "index.html"
     toml_path = output_path / "config.toml"
+    css_path = output_path / "troubadour.css"
 
     # Copy troubadour lib to dest folder
     troubadour_dest_dir = output_path / "troubadour"
@@ -79,6 +80,9 @@ def build(path: str, entry_point: str, src: str) -> None:
     main_template = environment.get_template("main.html.j2")
     main_source = main_template.render(entrypoint=entry_point)
 
+    css_template = environment.get_template("troubadour.css.j2")
+    css_source = css_template.render()
+
     toml_template = environment.get_template("config.toml.j2")
     package_list = ["jsonpickle"]
     toml_package_list = ",\n    ".join(f'"{package}"' for package in package_list)
@@ -101,3 +105,4 @@ def build(path: str, entry_point: str, src: str) -> None:
     print("Writing generated files")
     main_html_path.write_text(main_source)
     toml_path.write_text(toml_source)
+    css_path.write_text(css_source)
