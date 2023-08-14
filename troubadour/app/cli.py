@@ -18,7 +18,7 @@ def main():
 def server(port: int):
     """Runs a development server for a locally built project
     (expects _site folder to be present)."""
-    subprocess.run("cd _site && python -m http.server 8765", shell=True)
+    subprocess.run(f"cd _site && python -m http.server {port}", shell=True)
 
 
 # -~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~=~-~
@@ -37,9 +37,13 @@ def build(path: str, entry_point: str, src: str) -> None:
 
     # Paths
     src_dir = Path(src)
+    print("Building project from folder", src_dir)
     sources = list(src_dir.rglob("*.py"))
+    print(f"Found {len(sources)} source files")
     assert src_dir / entry_point in sources, "Entry point not in source files!"
+    print(f"Entry point {entry_point} found in sources")
     output_path = Path(path)
+    print(f"Output folder is {output_path}")
     main_html_path = output_path / "index.html"
     toml_path = output_path / "config.toml"
 
@@ -48,6 +52,10 @@ def build(path: str, entry_point: str, src: str) -> None:
     troubadour_spec = find_spec("troubadour")
     assert troubadour_spec is not None and troubadour_spec.origin is not None
     troubadour_module_dir = Path(troubadour_spec.origin).parent
+    print(
+        f"Copying troubadour library from {troubadour_module_dir}"
+        f" to {troubadour_dest_dir}"
+    )
 
     troubadour_files = troubadour_module_dir.rglob("*.py")
     troubadour_filtered_files = [
@@ -63,8 +71,10 @@ def build(path: str, entry_point: str, src: str) -> None:
         troubadour_dest_dir / f.relative_to(troubadour_module_dir)
         for f in troubadour_filtered_files
     ]
+    print("Done")
 
     # Generate file contents from Jinja templates
+    print("Generating project files from jinja template")
     environment = Environment(loader=PackageLoader("troubadour"))
     main_template = environment.get_template("main.html.j2")
     main_source = main_template.render(entrypoint=entry_point)
@@ -77,14 +87,17 @@ def build(path: str, entry_point: str, src: str) -> None:
         + [f'"{p.relative_to(output_path)}"' for p in troubadour_files_to_fetch]
     )
     toml_source = toml_template.render(packages=toml_package_list, fetch=toml_file_list)
+    print("Done")
 
     # Make dest folder
     output_path.mkdir(parents=True, exist_ok=True)
 
     # Copy source files
+    print("Copying source files")
     for f in sources:
         shutil.copyfile(f, output_path / f.relative_to(src_dir))
 
     # Write to files
+    print("Writing generated files")
     main_html_path.write_text(main_source)
     toml_path.write_text(toml_source)
