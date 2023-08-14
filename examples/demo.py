@@ -23,12 +23,13 @@ def my_passage(context: Context[MyState]) -> df.Interface:
 
 def my_other_passage(_context: Context) -> df.Interface:
     print("Hi")
+    be.insert_end(ElementId("output"), "<p>Hi</p>")
 
     return Button("Clack", my_passage)
 
 
 print(f"Advanced demo, running pyscript {be.pyscript_version()}")
-be.insert_end(ElementId("output"), "<h1>Hello</h1>World lorem ipsum stuff\n")
+be.insert_end(ElementId("output"), "<h1>Hello</h1>World lorem ipsum stuff<p/>\n")
 be.insert_end(ElementId("output"), "Hello worlds: <b id='youpi'>0</b>\n")
 
 run(my_passage, Context(state=MyState()))
