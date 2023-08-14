@@ -30,4 +30,4 @@ class Button(Interface):
     def setup(self, target: ElementId, context: Context = empty_context) -> None:
         id = get_unique_element_id("button")
         be.insert_end(target, f"<button type='button' id='{id}'>{self.txt}</button>")
-        be.onclick(id, lambda _: run(self.passage, context))
+        be.onclick(id, lambda _: run(self.passage, context, timestamp=True))
