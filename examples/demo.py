@@ -28,7 +28,7 @@ def my_other_passage(_context: Context) -> df.Interface:
 
 
 print(f"Advanced demo, running pyscript {be.pyscript_version()}")
-be.insert_end(ElementId("body"), "<h1>Hello</h1>World lorem ipsum stuff\n")
-be.insert_end(ElementId("body"), "Hello worlds: <b id='youpi'>0</b>\n")
+be.insert_end(ElementId("output"), "<h1>Hello</h1>World lorem ipsum stuff\n")
+be.insert_end(ElementId("output"), "Hello worlds: <b id='youpi'>0</b>\n")
 
 run(my_passage, Context(state=MyState()))
