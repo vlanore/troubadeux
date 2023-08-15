@@ -2,27 +2,26 @@ from dataclasses import dataclass
 
 import troubadour.backend as be
 import troubadour.definitions as df
-import troubadour.save as sv
 from troubadour.continuations import Button, InterfaceSequence
-from troubadour.definitions import Context, ElementId
-from troubadour.run import run
+from troubadour.definitions import Game, ElementId
+from troubadour.run import run_game
 
 
 @dataclass
-class MyState(df.State):
+class MyState:
     hello: int = 0
 
 
-def intro(context: Context[MyState]) -> df.Interface:
-    x = context.state.hello
+def intro(game: Game[MyState]) -> df.Interface:
+    x = game.game_state.hello
     be.insert_end(ElementId("output"), "<h1>Hello</h1>World lorem ipsum stuff<p/>\n")
     be.insert_end(ElementId("output"), f"Hello worlds: <b id='youpi'>{x}</b>\n")
     return Button("Click", my_other_passage)
 
 
-def my_passage(context: Context[MyState]) -> df.Interface:
+def my_passage(game: Game[MyState]) -> df.Interface:
     print("Hello")
-    context.state.hello += 1
+    game.game_state.hello += 1
     be.insert_end(
         ElementId("output"),
         (
@@ -45,13 +44,13 @@ def my_passage(context: Context[MyState]) -> df.Interface:
             " diam pellentesque odio, eu ornare neque felis ac mi.</p>"
         ),
     )
-    be.set_html(ElementId("youpi"), str(context.state.hello))
+    be.set_html(ElementId("youpi"), str(game.game_state.hello))
     return InterfaceSequence(
         Button("Click", my_other_passage), Button("Clack", my_passage)
     )
 
 
-def my_other_passage(_context: Context) -> df.Interface:
+def my_other_passage(_game: Game) -> df.Interface:
     print("Hi")
     be.insert_end(ElementId("output"), "<p>Hi</p>")
 
@@ -60,7 +59,4 @@ def my_other_passage(_context: Context) -> df.Interface:
 
 print(f"Advanced demo, running pyscript {be.pyscript_version()}")
 
-if not sv.state_exists():
-    run(intro, Context(state=MyState()), timestamp=True)
-else:
-    run(intro, Context(state=sv.load_state()), timestamp=True)
+run_game(MyState, intro)

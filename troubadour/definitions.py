@@ -1,35 +1,31 @@
+import datetime
 from dataclasses import dataclass, field
-from typing import Any, Callable, NewType, Protocol, TypeVar, Generic
+from typing import Generic, NewType, Optional, Protocol, TypeVar
 
 ElementId = NewType("ElementId", str)
 "Id of an element on the page (typically, a HTML tag)."
-
-
-class State:
-    "Game state 'tag' class that states need to inherit from."
-    ...
-
-
-empty_state = State()
-"An empty game state (e.g., to use as a default value)."
 
 T = TypeVar("T")
 
 
 @dataclass
-class Context(Generic[T]):
-    state: T
-    args: dict[str, Any] = field(default_factory=dict)
+class GameOutput:
+    html: str
+    timestamp: datetime.datetime
 
 
-empty_context = Context(state=empty_state)
+@dataclass
+class Game(Generic[T]):
+    game_state: T
+    input_state: Optional["Interface"] = None
+    output_state: list[GameOutput] = field(default_factory=list)
 
 
 class Interface(Protocol):
     "Inputs are user interface elements"
 
-    def setup(self, target: ElementId, context: Context = empty_context) -> None:
+    def setup(self, game: Game) -> None:
         ...
 
 
-Passage = Callable[[Context], Interface]
+# Passage = Callable[[Game], Interface]
