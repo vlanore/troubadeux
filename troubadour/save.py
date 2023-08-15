@@ -1,9 +1,14 @@
+import jsonpickle as jsp
+
 import troubadour.backend as be
 import troubadour.definitions as df
 
 
 def save_state(context: df.Context) -> None:
     be.local_storage["troubadour_state"] = context.state
+    json_source = jsp.encode(context.state)
+    assert json_source is not None
+    be.file_download_button("export", json_source, "save.json")
 
 
 def load_state() -> df.State:

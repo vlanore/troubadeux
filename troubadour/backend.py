@@ -5,6 +5,7 @@ from typing import Any, Callable, Generic, Optional, Type, TypeVar
 import js  # type: ignore
 import jsonpickle as jsp
 import pyscript
+from pyodide.code import run_js  # type: ignore
 from pyodide.ffi import create_proxy  # type: ignore
 from pyscript import Element  # type: ignore
 
@@ -122,3 +123,16 @@ class TypedLocalStorage(Generic[T]):
 
 local_storage = LocalStorage()
 "Global local storage object."
+
+
+def file_download_button(id: str, content: str, filename: str) -> None:
+    run_js(
+        f"""
+const blob = new Blob(
+    [`{content.encode("unicode_escape").decode("utf-8")}`], {{type: 'text/json'}});
+const button = document.getElementById("{id}");
+button.href = URL.createObjectURL(blob);
+button.download = "{filename}";
+        """
+    )
+    # FIXME revoke url
