@@ -12,7 +12,7 @@ def run(
     timestamp: bool = False,
 ) -> None:
     if timestamp:
-        t = datetime.datetime.now().strftime(r"%Y-%m-%d, %H:%M:%S")
+        t = datetime.datetime.now().strftime(r"%Y - %b %d - %H:%M:%S")
         be.insert_end(df.ElementId("output"), f"<div class='timestamp'>{t}</div>")
 
     be.clear(df.ElementId("input"))

@@ -4,7 +4,8 @@
     <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
     <link rel="stylesheet" href="troubadour.css">
     <script defer src="https://pyscript.net/latest/pyscript.js"></script>
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <meta name="viewport"
+        content="minimal-ui, width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 </head>
 
 <body>
@@ -12,7 +13,12 @@
     <py-script src="{{ entrypoint }}"> </py-script>
 
     <div id="box">
-        <div id="menu"> </div>
+        <div id="menu">
+            <button> Save </button>
+            <button> Load </button>
+            <button> Reset </button>
+            <button> Night </button>
+        </div>
         <div id="output"> </div>
         <div id="input"> </div>
     </div>
