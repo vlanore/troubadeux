@@ -2,7 +2,8 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 import troubadour.backend as be
-from troubadour.definitions import Game, Interface, ElementId
+from troubadour.definitions import ElementId
+from troubadour.game import Game, Interface
 from troubadour.run import run_passage
 from troubadour.unique_id import get_unique_element_id
 
