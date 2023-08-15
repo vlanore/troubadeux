@@ -2,10 +2,16 @@ import datetime
 from typing import Callable
 
 import jsonpickle as jsp
+
 import troubadour.backend as be
 import troubadour.definitions as df
 import troubadour.game as tg
-from troubadour.save import load_game, save_game, state_exists
+from troubadour.save import erase_save, load_game, save_game, state_exists
+
+
+def reset(_) -> None:
+    erase_save()
+    be.refresh_page()
 
 
 def run_game(StateCls: type, start_passage: Callable) -> None:
@@ -26,9 +32,14 @@ def run_game(StateCls: type, start_passage: Callable) -> None:
         if game.input_state is not None:
             game.input_state.setup(game)
         be.scroll_to_bottom(df.ElementId("output"))
+
+    # export button
     game_json = jsp.encode(game)
     assert game_json is not None
     be.file_download_button(df.ElementId("export"), game_json, "troubadour.json")
+
+    # reset button
+    be.onclick(df.ElementId("reset"), reset)
 
 
 def run_passage(

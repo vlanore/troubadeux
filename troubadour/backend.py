@@ -80,6 +80,10 @@ def scroll_to_bottom(id: ElementId) -> None:
     tgt.scrollTop = tgt.scrollHeight
 
 
+def refresh_page() -> None:
+    run_js("location.reload();")
+
+
 T = TypeVar("T")
 
 
@@ -95,6 +99,9 @@ class LocalStorage:
 
     def has_key(self, key: str) -> bool:
         return self[key] is not None
+
+    def remove(self, key: str) -> None:
+        js.localStorage.removeItem(key)
 
     def __call__(self, cls: Type[T]) -> "TypedLocalStorage[T]":
         """Helper interface to provided typed access to local storage. Usage is

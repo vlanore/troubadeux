@@ -20,3 +20,7 @@ def load_game() -> tg.Game:
 
 def state_exists() -> bool:
     return be.local_storage.has_key("troubadour_state")
+
+
+def erase_save() -> None:
+    be.local_storage.remove("troubadour_state")
