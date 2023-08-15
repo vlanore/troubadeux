@@ -2,6 +2,7 @@ import datetime
 
 import troubadour.backend as be
 import troubadour.definitions as df
+from troubadour.save import save_state
 
 
 def run(
@@ -19,3 +20,4 @@ def run(
     continuation = passage(context, *args)
     continuation.setup(df.ElementId("input"), context)
     be.scroll_to_bottom(df.ElementId("output"))
+    save_state(context)
