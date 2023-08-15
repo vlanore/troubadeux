@@ -1,10 +1,10 @@
 import jsonpickle as jsp
 
 import troubadour.backend as be
-import troubadour.definitions as df
+import troubadour.game as tg
 
 
-def save_game(game: df.Game) -> None:
+def save_game(game: tg.Game) -> None:
     # store in local memory
     be.local_storage["troubadour_state"] = game
 
@@ -14,8 +14,8 @@ def save_game(game: df.Game) -> None:
     be.file_download_button("export", json_source, "save.json")
 
 
-def load_game() -> df.Game:
-    return be.local_storage(df.Game)["troubadour_state"]
+def load_game() -> tg.Game:
+    return be.local_storage(tg.Game)["troubadour_state"]
 
 
 def state_exists() -> bool:
