@@ -39,6 +39,10 @@ def set_html(id: ElementId, html: str) -> None:
     Element(id).element.innerHTML = html
 
 
+def get_html(id: ElementId) -> str:
+    return Element(id).element.innerHTML
+
+
 def clear(id: ElementId) -> None:
     set_html(id, "")
 
