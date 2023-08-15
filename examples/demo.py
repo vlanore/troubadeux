@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import troubadour.backend as be
 import troubadour.definitions as df
+import troubadour.save as sv
 from troubadour.continuations import Button, InterfaceSequence
 from troubadour.definitions import Context, ElementId
 from troubadour.run import run
@@ -13,8 +14,9 @@ class MyState(df.State):
 
 
 def intro(context: Context[MyState]) -> df.Interface:
+    x = context.state.hello
     be.insert_end(ElementId("output"), "<h1>Hello</h1>World lorem ipsum stuff<p/>\n")
-    be.insert_end(ElementId("output"), "Hello worlds: <b id='youpi'>0</b>\n")
+    be.insert_end(ElementId("output"), f"Hello worlds: <b id='youpi'>{x}</b>\n")
     return Button("Click", my_other_passage)
 
 
@@ -58,4 +60,7 @@ def my_other_passage(_context: Context) -> df.Interface:
 
 print(f"Advanced demo, running pyscript {be.pyscript_version()}")
 
-run(intro, Context(state=MyState()), timestamp=True)
+if not sv.state_exists():
+    run(intro, Context(state=MyState()), timestamp=True)
+else:
+    run(intro, Context(state=sv.load_state()), timestamp=True)
