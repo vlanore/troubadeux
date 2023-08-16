@@ -45,6 +45,22 @@ class Game(Generic[T]):
         sv.erase_save()
         be.refresh_page()
 
+    def render(self) -> None:
+        be.clear(df.ElementId("output"))
+        be.clear(df.ElementId("input"))
+        for out in self.output_state:
+            match out:
+                case datetime.datetime():
+                    t = out.strftime(r"%Y - %b %d - %H:%M:%S")
+                    be.insert_end(
+                        df.ElementId("output"), f"<div class='timestamp'>{t}</div>"
+                    )
+                case str():
+                    be.insert_end(df.ElementId("output"), out)
+        if self.input_state is not None:
+            self.input_state.setup(self)
+        be.scroll_to_bottom(df.ElementId("output"))
+
     @classmethod
     def run_game(cls, StateCls: type, start_passage: Callable) -> None:
         if not sv.state_exists():
@@ -52,18 +68,7 @@ class Game(Generic[T]):
             game.run_passage(start_passage)
         else:
             game = sv.load_game()
-            for out in game.output_state:
-                match out:
-                    case datetime.datetime():
-                        t = out.strftime(r"%Y - %b %d - %H:%M:%S")
-                        be.insert_end(
-                            df.ElementId("output"), f"<div class='timestamp'>{t}</div>"
-                        )
-                    case str():
-                        be.insert_end(df.ElementId("output"), out)
-            if game.input_state is not None:
-                game.input_state.setup(game)
-            be.scroll_to_bottom(df.ElementId("output"))
+            game.render()
 
         # export button
         game_json = jsp.encode(game)
