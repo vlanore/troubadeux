@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from troubadour.continuations import Button, InterfaceSequence
+from troubadour.continuations import Button, InterfaceSequence, TextButton
 from troubadour.game import Game, Interface
 
 
@@ -48,7 +48,19 @@ def my_other_passage(game: Game[MyState], msg: str) -> Interface:
     )
     game.print(f"<p>This is a message: <i>{msg}</i></p>")
 
-    return Button("Clack", my_passage)
+    return InterfaceSequence(
+        Button("Clack", my_passage),
+        TextButton("Display", display_stuff, "msg"),
+    )
+
+
+def display_stuff(game: Game[MyState], msg: str) -> Interface:
+    game.print(
+        "<p>Nullam quis dignissim sapien, pulvinar congue sem. Proin consectetur,"
+        f" lacus quis aliquet: <i>{msg}</i></p>"
+    )
+
+    return Button("Click", my_other_passage, dict(msg="hello world"))
 
 
 Game.run(MyState, intro)

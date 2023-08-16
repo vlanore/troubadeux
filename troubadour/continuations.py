@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Callable
+from typing import Any, Callable
 
 import troubadour.backend as be
 from troubadour.definitions import eid
@@ -34,3 +34,28 @@ class Button(Interface):
                 self.passage, kwargs=self.kwargs, dialog=self.dialog
             ),
         )
+
+
+@dataclass
+class TextButton(Interface):
+    txt: str
+    passage: Callable
+    value_kw: str
+    kwargs: dict[str, object] = field(default_factory=dict)
+    dialog: bool = False
+    convertor: Callable[[Any], str] = str
+
+    def setup(self, game: Game) -> None:
+        text_id = get_unique_element_id("textinput")
+        button_id = get_unique_element_id("button")
+        be.insert_end(eid("input"), f"<input type='text' id='{text_id}'></input>")
+        be.insert_end(
+            eid("input"), f"<button type='button' id='{button_id}'>{self.txt}</button>"
+        )
+
+        def callback(_):
+            value = self.convertor(be.get_value(text_id))
+            full_kwargs = {self.value_kw: value, **self.kwargs}
+            game.run_passage(self.passage, kwargs=full_kwargs, dialog=self.dialog)
+
+        be.onclick(button_id, callback)
