@@ -1,4 +1,4 @@
 from typing import NewType
 
-ElementId = NewType("ElementId", str)
+eid = NewType("eid", str)
 "Id of an element on the page (typically, a HTML tag)."

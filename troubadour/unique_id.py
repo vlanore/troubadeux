@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from troubadour.definitions import ElementId
+from troubadour.definitions import eid
 
 
 @dataclass
@@ -25,7 +25,7 @@ def get_unique_id() -> int:
     return _global_provider.get()
 
 
-def get_unique_element_id(name: str = "") -> ElementId:
+def get_unique_element_id(name: str = "") -> eid:
     """Returns a unique troubadour element id of the form "troubadour__XY"
     where X is the optional `name` argument, and Y is a unique integer.
 
@@ -36,4 +36,4 @@ def get_unique_element_id(name: str = "") -> ElementId:
         - name (`str`): optional name for identifier sub-category."""
 
     to_insert = name + "__" if name != "" else ""
-    return ElementId(f"troubadour__{to_insert}{get_unique_id()}")
+    return eid(f"troubadour__{to_insert}{get_unique_id()}")
