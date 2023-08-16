@@ -1,9 +1,12 @@
 import datetime
 from dataclasses import dataclass, field
-from typing import Generic, Optional, Protocol, TypeVar
+from typing import Callable, Generic, Optional, Protocol, TypeVar
+
+import jsonpickle as jsp
 
 import troubadour.backend as be
 import troubadour.definitions as df
+import troubadour.save as sv
 
 T = TypeVar("T")
 
@@ -36,3 +39,50 @@ class Game(Generic[T]):
         self.output_state.append(ts)
         t = ts.strftime(r"%Y - %b %d - %H:%M:%S")
         be.insert_end(df.ElementId("output"), f"<div class='timestamp'>{t}</div>")
+
+    @classmethod
+    def reset(cls, _) -> None:
+        sv.erase_save()
+        be.refresh_page()
+
+    @classmethod
+    def run_game(cls, StateCls: type, start_passage: Callable) -> None:
+        if not sv.state_exists():
+            game = Game(StateCls())
+            game.run_passage(start_passage)
+        else:
+            game = sv.load_game()
+            for out in game.output_state:
+                match out:
+                    case datetime.datetime():
+                        t = out.strftime(r"%Y - %b %d - %H:%M:%S")
+                        be.insert_end(
+                            df.ElementId("output"), f"<div class='timestamp'>{t}</div>"
+                        )
+                    case str():
+                        be.insert_end(df.ElementId("output"), out)
+            if game.input_state is not None:
+                game.input_state.setup(game)
+            be.scroll_to_bottom(df.ElementId("output"))
+
+        # export button
+        game_json = jsp.encode(game)
+        assert game_json is not None
+        be.file_download_button(df.ElementId("export"), game_json, "troubadour.json")
+
+        # reset button
+        be.onclick(df.ElementId("reset"), cls.reset)
+
+    def run_passage(
+        self,
+        passage: Callable,
+        *,
+        args: dict[str, object] = {},
+    ) -> None:
+        self.timestamp()
+        be.clear(df.ElementId("input"))
+        continuation = passage(self, *args)
+        self.input_state = continuation
+        continuation.setup(self)
+        be.scroll_to_bottom(df.ElementId("output"))
+        sv.save_game(self)

@@ -4,7 +4,6 @@ from typing import Callable
 import troubadour.backend as be
 from troubadour.definitions import ElementId
 from troubadour.game import Game, Interface
-from troubadour.run import run_passage
 from troubadour.unique_id import get_unique_element_id
 
 
@@ -28,4 +27,4 @@ class Button(Interface):
         be.insert_end(
             ElementId("input"), f"<button type='button' id='{id}'>{self.txt}</button>"
         )
-        be.onclick(id, lambda _: run_passage(game, self.passage))
+        be.onclick(id, lambda _: game.run_passage(self.passage))

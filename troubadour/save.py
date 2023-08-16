@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import jsonpickle as jsp
 
 import troubadour.backend as be
