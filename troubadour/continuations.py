@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 from typing import Callable
 
 import troubadour.backend as be
-from troubadour.definitions import ElementId
+from troubadour.definitions import eid
 from troubadour.game import Game, Interface
 from troubadour.unique_id import get_unique_element_id
 
@@ -26,7 +26,7 @@ class Button(Interface):
     def setup(self, game: Game) -> None:
         id = get_unique_element_id("button")
         be.insert_end(
-            ElementId("input"), f"<button type='button' id='{id}'>{self.txt}</button>"
+            eid("input"), f"<button type='button' id='{id}'>{self.txt}</button>"
         )
         be.onclick(
             id,
