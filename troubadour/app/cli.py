@@ -60,7 +60,9 @@ def build(path: str, entry_point: str, src: str) -> None:
 
     troubadour_files = troubadour_module_dir.rglob("*.py")
     troubadour_filtered_files = [
-        f for f in troubadour_files if str(f)[:5] != "__pyc" and "cli.py" not in str(f)
+        f
+        for f in troubadour_files
+        if str(f)[:5] != "__pyc" and "app/" not in str(f) and "templates/" not in str(f)
     ]
     if troubadour_dest_dir.exists():
         shutil.rmtree(troubadour_dest_dir)
