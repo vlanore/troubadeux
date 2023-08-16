@@ -10,14 +10,14 @@ class MyState:
 
 
 def intro(game: Game[MyState]) -> Interface:
-    x = game.game_state.hello
+    x = game.state.hello
     game.print("<h1>Hello</h1>World lorem ipsum stuff<p/>\n")
     game.print(f"Hello worlds: <b id='youpi'>{x}</b>\n")
-    return Button("Click", my_other_passage)
+    return Button("Click", my_other_passage, dict(msg="Youpi"))
 
 
 def my_passage(game: Game[MyState]) -> Interface:
-    game.game_state.hello += 1
+    game.state.hello += 1
     game.print(
         "<p>Praesent leo diam, scelerisque dapibus commodo ut, facilisis sit amet "
         "felis. Donec libero lacus, interdum a tortor sed, vestibulum suipit nunc."
@@ -35,12 +35,18 @@ def my_passage(game: Game[MyState]) -> Interface:
         " diam pellentesque odio, eu ornare neque felis ac mi.</p>"
     )
     return InterfaceSequence(
-        Button("Click", my_other_passage), Button("Clack", my_passage)
+        Button("Click", my_other_passage, dict(msg="Tralala")),
+        Button("Clack", my_passage),
     )
 
 
-def my_other_passage(game: Game[MyState]) -> Interface:
-    game.print(f"Hi: <b>{game.game_state.hello}</b>")
+def my_other_passage(game: Game[MyState], msg: str) -> Interface:
+    game.print(f"Hi: <b>{game.state.hello}</b>")
+    game.print(
+        "<p>Fusce id pharetra lacus. Nullam quis dignissim sapien, pulvinar"
+        " congue sem. Proin consectetur, lacus quis aliquet.</p>"
+    )
+    game.print(f"<p>This is a message: <i>{msg}</i></p>")
 
     return Button("Clack", my_passage)
 

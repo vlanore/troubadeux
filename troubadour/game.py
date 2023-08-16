@@ -26,7 +26,7 @@ class GameOutput:
 
 @dataclass
 class Game(Generic[T]):
-    game_state: T
+    state: T
     input_state: Optional[Interface] = None
     output_state: list[str | datetime.datetime] = field(default_factory=list)
 
@@ -73,15 +73,10 @@ class Game(Generic[T]):
         # reset button
         be.onclick(df.ElementId("reset"), cls.reset)
 
-    def run_passage(
-        self,
-        passage: Callable,
-        *,
-        args: dict[str, object] = {},
-    ) -> None:
+    def run_passage(self, passage: Callable, **kwargs: object) -> None:
         self.timestamp()
         be.clear(df.ElementId("input"))
-        continuation = passage(self, *args)
+        continuation = passage(self, **kwargs)
         self.input_state = continuation
         continuation.setup(self)
         be.scroll_to_bottom(df.ElementId("output"))
