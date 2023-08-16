@@ -2,9 +2,6 @@
 requires = ["setuptools>=64.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.packages.find]
-include = ["troubadour"]
-
 [project]
 name = "troubadeux"
 authors = [{ name = "Vincent Lanore", email = "vincent.lanore@gmail.com" }]
