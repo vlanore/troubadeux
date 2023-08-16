@@ -21,17 +21,19 @@ class Interface(Protocol):
 
 class ResetDialog:
     @classmethod
-    def perform_reset(cls, game: "Game") -> None:
+    def perform_reset(cls, _game: "Game") -> None:
         sv.erase_save()
         be.refresh_page()
 
     @classmethod
-    def dialog(cls, game: "Game") -> Interface:
+    def dialog(cls, _game: "Game") -> Interface:
         be.insert_end(
             eid("output"),
-            ("<h1>Game reset</h1>"
-             "<p>Are you sure you want to reset?</p>"
-             "<p>This will <b>erase all game data</b>."),
+            (
+                "<h1>Game reset</h1>"
+                "<p>Are you sure you want to reset?</p>"
+                "<p>This will <b>erase all game data</b>."
+            ),
         )
         return tc.InterfaceSequence(
             tc.Button("Reset", cls.perform_reset, dialog=True),
@@ -49,6 +51,7 @@ class Game(Generic[T]):
     state: T
     input_state: Optional[Interface] = None
     output_state: list[str | datetime.datetime] = field(default_factory=list)
+    max_output_len: int = 50
 
     def print(self, html: str) -> None:
         self.output_state.append(html)
@@ -95,6 +98,12 @@ class Game(Generic[T]):
         # reset button
         be.onclick(eid("reset"), ResetDialog.callback)
 
+    def trim_output(self) -> None:
+        if len(self.output_state) > self.max_output_len:
+            trim_index = -self.max_output_len
+            self.output_state = self.output_state[trim_index:]
+            self.render()
+
     def run_passage(
         self, passage: Callable, *, dialog: bool = False, kwargs: dict[str, object] = {}
     ) -> None:
@@ -110,4 +119,5 @@ class Game(Generic[T]):
             continuation.setup(self)
         be.scroll_to_bottom(eid("output"))
         if not dialog:
+            self.trim_output()
             sv.save_game(self)
