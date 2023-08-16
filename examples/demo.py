@@ -51,4 +51,4 @@ def my_other_passage(game: Game[MyState], msg: str) -> Interface:
     return Button("Clack", my_passage)
 
 
-Game.run_game(MyState, intro)
+Game.run(MyState, intro)
