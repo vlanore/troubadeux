@@ -20,11 +20,11 @@ class InterfaceSequence:
 class Button(Interface):
     txt: str
     passage: Callable
-    args: dict[str, object] = field(default_factory=dict)
+    kwargs: dict[str, object] = field(default_factory=dict)
 
     def setup(self, game: Game) -> None:
         id = get_unique_element_id("button")
         be.insert_end(
             ElementId("input"), f"<button type='button' id='{id}'>{self.txt}</button>"
         )
-        be.onclick(id, lambda _: game.run_passage(self.passage))
+        be.onclick(id, lambda _: game.run_passage(self.passage, **self.kwargs))
