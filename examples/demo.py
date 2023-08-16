@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 from troubadour.continuations import Button, InterfaceSequence
 from troubadour.game import Game, Interface
-from troubadour.run import run_game
 
 
 @dataclass
@@ -46,4 +45,4 @@ def my_other_passage(game: Game[MyState]) -> Interface:
     return Button("Clack", my_passage)
 
 
-run_game(MyState, intro)
+Game.run_game(MyState, intro)
