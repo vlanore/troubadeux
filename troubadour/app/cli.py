@@ -43,6 +43,7 @@ def build(path: str, entry_point: str, src: str) -> None:
     assert src_dir / entry_point in sources, "Entry point not in source files!"
     print(f"Entry point {entry_point} found in sources")
     output_path = Path(path)
+    user_module = output_path / src_dir.absolute().name
     print(f"Output folder is {output_path}")
     main_html_path = output_path / "index.html"
     toml_path = output_path / "config.toml"
@@ -80,7 +81,7 @@ def build(path: str, entry_point: str, src: str) -> None:
     print("Generating project files from jinja template")
     environment = Environment(loader=PackageLoader("troubadour"))
     main_template = environment.get_template("main.html.j2")
-    main_source = main_template.render(entrypoint=entry_point)
+    main_source = main_template.render(entrypoint=f"{user_module.name}/{entry_point}")
 
     css_template = environment.get_template("troubadour.css.j2")
     css_source = css_template.render()
@@ -89,19 +90,20 @@ def build(path: str, entry_point: str, src: str) -> None:
     package_list = ["jsonpickle"]
     toml_package_list = ",\n    ".join(f'"{package}"' for package in package_list)
     toml_file_list = ",\n    ".join(
-        [f'"{p.relative_to(src_dir)}"' for p in sources]
+        [f'"{p.relative_to(src_dir.parent)}"' for p in sources]
         + [f'"{p.relative_to(output_path)}"' for p in troubadour_files_to_fetch]
     )
     toml_source = toml_template.render(packages=toml_package_list, fetch=toml_file_list)
     print("Done")
 
-    # Make dest folder
+    # Make dest folder and module folder
     output_path.mkdir(parents=True, exist_ok=True)
+    user_module.mkdir(exist_ok=True)
 
     # Copy source files
     print("Copying source files")
     for f in sources:
-        shutil.copyfile(f, output_path / f.relative_to(src_dir))
+        shutil.copyfile(f, user_module / f.relative_to(src_dir))
 
     # Write to files
     print("Writing generated files")
