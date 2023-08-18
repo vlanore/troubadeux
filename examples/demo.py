@@ -34,7 +34,8 @@ def my_passage(game: Game[MyState]) -> None:
         " congue sem. Proin consectetur, lacus quis aliquet porta, tellus"
         " diam pellentesque odio, eu ornare neque felis ac mi."
     )
-    game.continuation(
+    inputs = game.p(css={"class": "'inputzone'"})
+    inputs.continuation(
         InterfaceSequence(
             Button("Click", my_other_passage, dict(msg="Tralala")),
             Button("Clack", my_passage),

@@ -54,6 +54,9 @@ class Element(Output):
     def p(self, html: str = "") -> "Element":
         return self.game.p(html, target=self.id)
 
+    def continuation(self, continuation: Interface) -> None:
+        self.game.continuation(continuation, target=self.id)
+
 
 @dataclass
 class TimeStamp:
@@ -71,6 +74,7 @@ class RawHTML:
 class Container:
     type: str
     html: str
+    css: dict[str, str]
     target: Target
     local_id: lid
 
@@ -106,13 +110,17 @@ class Game(Output, Generic[T]):
     def print(self, html: str, target: Target = None) -> None:
         self.current_passage.contents.append(RawHTML(html, target))
 
-    def p(self, html: str = "", target: Target = None) -> Element:
+    def p(
+        self, html: str = "", target: Target = None, css: dict[str, str] = {}
+    ) -> Element:
         local_id = self.current_passage.new_lid()
-        self.current_passage.contents.append(Container("p", html, target, local_id))
+        self.current_passage.contents.append(
+            Container("p", html, css, target, local_id)
+        )
         return Element(local_id, self)
 
-    def continuation(self, continuation: Interface) -> None:
-        self.current_passage.contents.append(Continuation(continuation, target=None))
+    def continuation(self, continuation: Interface, target: Target = None) -> None:
+        self.current_passage.contents.append(Continuation(continuation, target=target))
 
     def _timestamp(self) -> None:
         ts = datetime.datetime.now()
@@ -132,18 +140,18 @@ class Game(Output, Generic[T]):
                     be.insert_end(eid_target, f"<div class='timestamp'>{t}</div>")
                 case RawHTML(html=html):
                     be.insert_end(eid_target, html)
-                case Container(type=type, html=html, local_id=local_id):
+                case Container(type=type, html=html, css=css, local_id=local_id):
                     element_id = get_unique_element_id("container")
                     passage.lid_to_eid[local_id] = element_id
+                    rcss = " ".join(f"{key}={value}" for key, value in css.items())
                     be.insert_end(
-                        eid_target, f"<{type} id='{element_id}'>{html}</{type}>"
+                        eid_target, f"<{type} {rcss} id='{element_id}'>{html}</{type}>"
                     )
                 case Continuation(continuation=continuation):
                     continuation.setup(self, eid_target)
 
     def _render(self) -> None:
         be.clear(eid("output"))
-        be.clear(eid("input"))
         for passage in self.output_state:
             self._render_passage(passage)
         be.scroll_to_bottom(eid("output"))
@@ -185,7 +193,6 @@ class Game(Output, Generic[T]):
             self._timestamp()
         else:
             be.clear(eid("output"))  # if dialog then need to clear whole output
-        be.clear(eid("input"))
         passage(self, **kwargs)
 
         # render the passage and scroll to bottom of page
