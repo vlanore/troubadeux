@@ -67,14 +67,20 @@ class RawHTML:
 
 
 @dataclass
+class PassageOutput:
+    contents: list[RawHTML | TimeStamp] = field(default_factory=list)
+
+
+@dataclass
 class Game(Output, Generic[T]):
     state: T
     input_state: Optional[Interface] = None
-    output_state: list[RawHTML | TimeStamp] = field(default_factory=list)
-    max_output_len: int = 50
+    output_state: list[PassageOutput] = field(default_factory=list)
+    current_passage: PassageOutput = field(default_factory=PassageOutput)
+    max_output_len: int = 10
 
     def print(self, html: str, target: eid = eid("output")) -> None:
-        self.output_state.append(RawHTML(html))
+        self.current_passage.contents.append(RawHTML(html))
         be.insert_end(eid(target), html)
 
     def p(self, html: str = "", target: eid = eid("output")) -> Element:
@@ -84,20 +90,23 @@ class Game(Output, Generic[T]):
 
     def _timestamp(self) -> None:
         ts = datetime.datetime.now()
-        self.output_state.append(TimeStamp(ts))
+        self.current_passage.contents.append(TimeStamp(ts))
         t = ts.strftime(r"%Y - %b %d - %H:%M:%S")
         be.insert_end(eid("output"), f"<div class='timestamp'>{t}</div>")
 
     def _render(self) -> None:
         be.clear(eid("output"))
         be.clear(eid("input"))
-        for out in self.output_state:
-            match out:
-                case TimeStamp():
-                    t = out.date.strftime(r"%Y - %b %d - %H:%M:%S")
-                    be.insert_end(eid("output"), f"<div class='timestamp'>{t}</div>")
-                case RawHTML():
-                    be.insert_end(eid("output"), out.html)
+        for passage in self.output_state:
+            for out in passage.contents:
+                match out:
+                    case TimeStamp():
+                        t = out.date.strftime(r"%Y - %b %d - %H:%M:%S")
+                        be.insert_end(
+                            eid("output"), f"<div class='timestamp'>{t}</div>"
+                        )
+                    case RawHTML():
+                        be.insert_end(eid("output"), out.html)
         if self.input_state is not None:
             self.input_state.setup(self)
         be.scroll_to_bottom(eid("output"))
@@ -133,6 +142,7 @@ class Game(Output, Generic[T]):
         self, passage: Callable, *, dialog: bool = False, kwargs: dict[str, object] = {}
     ) -> None:
         if not dialog:
+            self.current_passage = PassageOutput()
             self._timestamp()
         else:
             be.clear(eid("output"))
@@ -144,5 +154,7 @@ class Game(Output, Generic[T]):
             continuation.setup(self)
         be.scroll_to_bottom(eid("output"))
         if not dialog:
+            self.output_state.append(self.current_passage)
+            self.current_passage = PassageOutput()
             self._trim_output()
             sv.save_game(self)
