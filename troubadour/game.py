@@ -7,7 +7,7 @@ import jsonpickle as jsp
 import troubadour.backend as be
 import troubadour.continuations as tc
 import troubadour.save as sv
-from troubadour.definitions import eid
+from troubadour.definitions import eid, Output
 from troubadour.unique_id import get_unique_element_id
 
 T = TypeVar("T")
@@ -44,57 +44,76 @@ class ResetDialog:
     @classmethod
     def callback(cls, _) -> None:
         game = sv.load_game()
-        game.run_passage(cls.dialog, dialog=True)
+        game._run_passage(cls.dialog, dialog=True)
 
 
 @dataclass
-class Game(Generic[T]):
+class Element(Output):
+    id: eid
+    game: "Game"
+
+    def p(self, html: str = "") -> "Element":
+        return self.game.p(html, self.id)
+
+
+@dataclass
+class TimeStamp:
+    date: datetime.datetime
+
+
+@dataclass
+class RawHTML:
+    html: str
+
+
+@dataclass
+class Game(Output, Generic[T]):
     state: T
     input_state: Optional[Interface] = None
-    output_state: list[str | datetime.datetime] = field(default_factory=list)
+    output_state: list[RawHTML | TimeStamp] = field(default_factory=list)
     max_output_len: int = 50
 
-    def print(self, html: str) -> None:
-        self.output_state.append(html)
-        be.insert_end(eid("output"), html)
+    def print(self, html: str, target: eid = eid("output")) -> None:
+        self.output_state.append(RawHTML(html))
+        be.insert_end(eid(target), html)
 
-    def p(self, html: str = "") -> eid:
+    def p(self, html: str = "", target: eid = eid("output")) -> Element:
         id = get_unique_element_id("paragraph")
-        self.print(f"<p id='{id}'>{html}</p>")
-        return id
+        self.print(f"<p id='{id}'>{html}</p>", target=target)
+        return Element(id, self)
 
-    def timestamp(self) -> None:
+    def _timestamp(self) -> None:
         ts = datetime.datetime.now()
-        self.output_state.append(ts)
+        self.output_state.append(TimeStamp(ts))
         t = ts.strftime(r"%Y - %b %d - %H:%M:%S")
         be.insert_end(eid("output"), f"<div class='timestamp'>{t}</div>")
 
-    def render(self) -> None:
+    def _render(self) -> None:
         be.clear(eid("output"))
         be.clear(eid("input"))
         for out in self.output_state:
             match out:
-                case datetime.datetime():
-                    t = out.strftime(r"%Y - %b %d - %H:%M:%S")
+                case TimeStamp():
+                    t = out.date.strftime(r"%Y - %b %d - %H:%M:%S")
                     be.insert_end(eid("output"), f"<div class='timestamp'>{t}</div>")
-                case str():
-                    be.insert_end(eid("output"), out)
+                case RawHTML():
+                    be.insert_end(eid("output"), out.html)
         if self.input_state is not None:
             self.input_state.setup(self)
         be.scroll_to_bottom(eid("output"))
 
     @classmethod
     def cancel_dialog(cls, game: "Game") -> None:
-        game.render()
+        game._render()
 
     @classmethod
     def run(cls, StateCls: type, start_passage: Callable) -> None:
         if not sv.state_exists():
             game = Game(StateCls())
-            game.run_passage(start_passage)
+            game._run_passage(start_passage)
         else:
             game = sv.load_game()
-            game.render()
+            game._render()
 
         # export button
         game_json = jsp.encode(game)
@@ -104,17 +123,17 @@ class Game(Generic[T]):
         # reset button
         be.onclick(eid("reset"), ResetDialog.callback)
 
-    def trim_output(self) -> None:
+    def _trim_output(self) -> None:
         if len(self.output_state) > self.max_output_len:
             trim_index = -self.max_output_len
             self.output_state = self.output_state[trim_index:]
-            self.render()
+            self._render()
 
-    def run_passage(
+    def _run_passage(
         self, passage: Callable, *, dialog: bool = False, kwargs: dict[str, object] = {}
     ) -> None:
         if not dialog:
-            self.timestamp()
+            self._timestamp()
         else:
             be.clear(eid("output"))
         be.clear(eid("input"))
@@ -125,5 +144,5 @@ class Game(Generic[T]):
             continuation.setup(self)
         be.scroll_to_bottom(eid("output"))
         if not dialog:
-            self.trim_output()
+            self._trim_output()
             sv.save_game(self)

@@ -32,7 +32,7 @@ class Button:
         )
         be.onclick(
             id,
-            lambda _: game.run_passage(
+            lambda _: game._run_passage(
                 self.passage, kwargs=self.kwargs, dialog=self.dialog
             ),
         )
@@ -62,6 +62,6 @@ class TextButton:
         def callback(_):
             value = self.convertor(be.get_value(text_id))
             full_kwargs = {self.value_kw: value, **self.kwargs}
-            game.run_passage(self.passage, kwargs=full_kwargs, dialog=self.dialog)
+            game._run_passage(self.passage, kwargs=full_kwargs, dialog=self.dialog)
 
         be.onclick(button_id, callback)
