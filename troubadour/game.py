@@ -83,7 +83,6 @@ class Game(Output, Generic[T]):
 
     def print(self, html: str, target: eid = eid("output")) -> None:
         self.current_passage.contents.append(RawHTML(html, target))
-        be.insert_end(eid(target), html)
 
     def p(self, html: str = "", target: eid = eid("output")) -> Element:
         id = get_unique_element_id("paragraph")
@@ -93,20 +92,21 @@ class Game(Output, Generic[T]):
     def _timestamp(self) -> None:
         ts = datetime.datetime.now()
         self.current_passage.contents.append(TimeStamp(ts, eid("output")))
-        t = ts.strftime(r"%Y - %b %d - %H:%M:%S")
-        be.insert_end(eid("output"), f"<div class='timestamp'>{t}</div>")
+
+    def _render_passage(self, passage: PassageOutput) -> None:
+        for out in passage.contents:
+            match out:
+                case TimeStamp():
+                    t = out.date.strftime(r"%Y - %b %d - %H:%M:%S")
+                    be.insert_end(out.target, f"<div class='timestamp'>{t}</div>")
+                case RawHTML():
+                    be.insert_end(out.target, out.html)
 
     def _render(self) -> None:
         be.clear(eid("output"))
         be.clear(eid("input"))
         for passage in self.output_state:
-            for out in passage.contents:
-                match out:
-                    case TimeStamp():
-                        t = out.date.strftime(r"%Y - %b %d - %H:%M:%S")
-                        be.insert_end(out.target, f"<div class='timestamp'>{t}</div>")
-                    case RawHTML():
-                        be.insert_end(out.target, out.html)
+            self._render_passage(passage)
         if self.input_state is not None:
             self.input_state.setup(self)
         be.scroll_to_bottom(eid("output"))
@@ -141,18 +141,24 @@ class Game(Output, Generic[T]):
     def _run_passage(
         self, passage: Callable, *, dialog: bool = False, kwargs: dict[str, object] = {}
     ) -> None:
+        # new empty passage
+        self.current_passage = PassageOutput()
+
         if not dialog:
-            self.current_passage = PassageOutput()
             self._timestamp()
         else:
-            be.clear(eid("output"))
+            be.clear(eid("output"))  # if dialog then need to clear whole output
         be.clear(eid("input"))
         continuation: Interface | None = passage(self, **kwargs)
         if continuation is not None:
             if not dialog:
                 self.input_state = continuation
             continuation.setup(self)
+
+        # render the passage and scroll to bottom of page
+        self._render_passage(self.current_passage)
         be.scroll_to_bottom(eid("output"))
+
         if not dialog:
             self.output_state.append(self.current_passage)
             self.current_passage = PassageOutput()
