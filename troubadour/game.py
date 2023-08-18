@@ -6,8 +6,9 @@ import jsonpickle as jsp
 
 import troubadour.backend as be
 import troubadour.continuations as tc
-from troubadour.definitions import eid
 import troubadour.save as sv
+from troubadour.definitions import eid
+from troubadour.unique_id import get_unique_element_id
 
 T = TypeVar("T")
 
@@ -56,6 +57,11 @@ class Game(Generic[T]):
     def print(self, html: str) -> None:
         self.output_state.append(html)
         be.insert_end(eid("output"), html)
+
+    def p(self, html: str = "") -> eid:
+        id = get_unique_element_id("paragraph")
+        self.print(f"<p id='{id}'>{html}</p>")
+        return id
 
     def timestamp(self) -> None:
         ts = datetime.datetime.now()
