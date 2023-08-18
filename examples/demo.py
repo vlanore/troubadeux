@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from troubadour.continuations import Button, InterfaceSequence, TextButton
-from troubadour.game import Game, Interface
+from troubadour.game import Game
 
 
 @dataclass
@@ -9,14 +9,14 @@ class MyState:
     hello: int = 0
 
 
-def intro(game: Game[MyState]) -> Interface:
+def intro(game: Game[MyState]) -> None:
     x = game.state.hello
     game.p("<h1>Hello</h1>World lorem ipsum stuff<p/>\n")
     game.p(f"Hello worlds: <b id='youpi'>{x}</b>\n")
-    return Button("Click", my_other_passage, dict(msg="Youpi"))
+    game.continuation(Button("Click", my_other_passage, dict(msg="Youpi")))
 
 
-def my_passage(game: Game[MyState]) -> Interface:
+def my_passage(game: Game[MyState]) -> None:
     game.state.hello += 1
     game.p(
         "Praesent leo diam, scelerisque dapibus commodo ut, facilisis sit amet "
@@ -34,13 +34,15 @@ def my_passage(game: Game[MyState]) -> Interface:
         " congue sem. Proin consectetur, lacus quis aliquet porta, tellus"
         " diam pellentesque odio, eu ornare neque felis ac mi."
     )
-    return InterfaceSequence(
-        Button("Click", my_other_passage, dict(msg="Tralala")),
-        Button("Clack", my_passage),
+    game.continuation(
+        InterfaceSequence(
+            Button("Click", my_other_passage, dict(msg="Tralala")),
+            Button("Clack", my_passage),
+        )
     )
 
 
-def my_other_passage(game: Game[MyState], msg: str) -> Interface:
+def my_other_passage(game: Game[MyState], msg: str) -> None:
     game.p(f"Hi: <b>{game.state.hello}</b>")
     game.p(
         "Fusce id pharetra lacus. Nullam quis dignissim sapien, pulvinar"
@@ -49,19 +51,17 @@ def my_other_passage(game: Game[MyState], msg: str) -> Interface:
     my_p = game.p(f"This is a message: <i>{msg}</i>")
     my_p.p("test")
 
-    return InterfaceSequence(
-        Button("Clack", my_passage),
-        TextButton("Display", display_stuff, "msg"),
-    )
+    game.continuation(Button("Clack", my_passage))
+    game.continuation(TextButton("Display", display_stuff, "msg"))
 
 
-def display_stuff(game: Game[MyState], msg: str) -> Interface:
+def display_stuff(game: Game[MyState], msg: str) -> None:
     game.p(
         "Nullam quis dignissim sapien, pulvinar congue sem. Proin consectetur,"
         f" lacus quis aliquet: <i>{msg}</i>"
     )
 
-    return Button("Click", my_other_passage, dict(msg="hello world"))
+    game.continuation(Button("Click", my_other_passage, dict(msg="hello world")))
 
 
 Game.run(MyState, intro)

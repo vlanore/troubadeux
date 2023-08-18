@@ -13,9 +13,9 @@ class InterfaceSequence:
     def __init__(self, *continuations: tg.Interface):
         self.lst = [*continuations]
 
-    def setup(self, game: tg.Game) -> None:
+    def setup(self, game: tg.Game, target: eid = eid("output")) -> None:
         for cont in self.lst:
-            cont.setup(game)
+            cont.setup(game, target)
 
 
 @dataclass
@@ -25,11 +25,9 @@ class Button:
     kwargs: dict[str, object] = field(default_factory=dict)
     dialog: bool = False
 
-    def setup(self, game: tg.Game) -> None:
+    def setup(self, game: tg.Game, target: eid = eid("output")) -> None:
         id = get_unique_element_id("button")
-        be.insert_end(
-            eid("input"), f"<button type='button' id='{id}'>{self.txt}</button>"
-        )
+        be.insert_end(target, f"<button type='button' id='{id}'>{self.txt}</button>")
         be.onclick(
             id,
             lambda _: game._run_passage(
@@ -47,12 +45,12 @@ class TextButton:
     dialog: bool = False
     convertor: Callable[[Any], str] = str
 
-    def setup(self, game: tg.Game) -> None:
+    def setup(self, game: tg.Game, target: eid = eid("output")) -> None:
         text_id = get_unique_element_id("textinput")
         button_id = get_unique_element_id("button")
-        be.insert_end(eid("input"), f"<input type='text' id='{text_id}'></input>")
+        be.insert_end(target, f"<input type='text' id='{text_id}'></input>")
         be.insert_end(
-            eid("input"),
+            target,
             (
                 "<button class='textbutton' type='button' "
                 f"id='{button_id}'>{self.txt}</button>"

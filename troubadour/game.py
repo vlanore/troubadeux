@@ -1,6 +1,6 @@
 import datetime
 from dataclasses import dataclass, field
-from typing import Callable, Generic, Optional, Protocol, TypeVar
+from typing import Callable, Generic, Protocol, TypeVar
 
 import jsonpickle as jsp
 
@@ -16,7 +16,7 @@ T = TypeVar("T")
 class Interface(Protocol):
     "Inputs are user interface elements"
 
-    def setup(self, game: "Game") -> None:
+    def setup(self, game: "Game", target: eid = eid("output")) -> None:
         ...
 
 
@@ -27,7 +27,7 @@ class ResetDialog:
         be.refresh_page()
 
     @classmethod
-    def dialog(cls, _game: "Game") -> Interface:
+    def dialog(cls, _game: "Game") -> None:
         be.insert_end(
             eid("output"),
             (
@@ -36,10 +36,9 @@ class ResetDialog:
                 "<p>This will <b>erase all game data</b>."
             ),
         )
-        return tc.InterfaceSequence(
-            tc.Button("Reset", cls.perform_reset, dialog=True),
-            tc.Button("Cancel", Game.cancel_dialog, dialog=True),
-        )
+
+        tc.Button("Reset", cls.perform_reset, dialog=True).setup(_game)
+        tc.Button("Cancel", Game.cancel_dialog, dialog=True).setup(_game)
 
     @classmethod
     def callback(cls, _) -> None:
@@ -77,8 +76,17 @@ class Container:
 
 
 @dataclass
+class Continuation:
+    continuation: Interface
+    target: Target
+
+
+PassageElement = RawHTML | TimeStamp | Container | Continuation
+
+
+@dataclass
 class PassageOutput:  # FIXME remove next_lid + lid_to_eid
-    contents: list[RawHTML | TimeStamp | Container] = field(default_factory=list)
+    contents: list[PassageElement] = field(default_factory=list)
     next_lid: int = 0
     lid_to_eid: dict[lid, eid] = field(default_factory=dict)
 
@@ -91,7 +99,6 @@ class PassageOutput:  # FIXME remove next_lid + lid_to_eid
 @dataclass
 class Game(Output, Generic[T]):
     state: T
-    input_state: Optional[Interface] = None
     output_state: list[PassageOutput] = field(default_factory=list)
     current_passage: PassageOutput = field(default_factory=PassageOutput)
     max_output_len: int = 10
@@ -103,6 +110,9 @@ class Game(Output, Generic[T]):
         local_id = self.current_passage.new_lid()
         self.current_passage.contents.append(Container("p", html, target, local_id))
         return Element(local_id, self)
+
+    def continuation(self, continuation: Interface) -> None:
+        self.current_passage.contents.append(Continuation(continuation, target=None))
 
     def _timestamp(self) -> None:
         ts = datetime.datetime.now()
@@ -128,14 +138,14 @@ class Game(Output, Generic[T]):
                     be.insert_end(
                         eid_target, f"<{type} id='{element_id}'>{html}</{type}>"
                     )
+                case Continuation(continuation=continuation):
+                    continuation.setup(self, eid_target)
 
     def _render(self) -> None:
         be.clear(eid("output"))
         be.clear(eid("input"))
         for passage in self.output_state:
             self._render_passage(passage)
-        if self.input_state is not None:
-            self.input_state.setup(self)
         be.scroll_to_bottom(eid("output"))
 
     @classmethod
@@ -176,11 +186,7 @@ class Game(Output, Generic[T]):
         else:
             be.clear(eid("output"))  # if dialog then need to clear whole output
         be.clear(eid("input"))
-        continuation: Interface | None = passage(self, **kwargs)
-        if continuation is not None:
-            if not dialog:
-                self.input_state = continuation
-            continuation.setup(self)
+        passage(self, **kwargs)
 
         # render the passage and scroll to bottom of page
         self._render_passage(self.current_passage)
