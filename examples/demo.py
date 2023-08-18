@@ -46,7 +46,8 @@ def my_other_passage(game: Game[MyState], msg: str) -> Interface:
         "Fusce id pharetra lacus. Nullam quis dignissim sapien, pulvinar"
         " congue sem. Proin consectetur, lacus quis aliquet."
     )
-    game.p(f"This is a message: <i>{msg}</i>")
+    my_p = game.p(f"This is a message: <i>{msg}</i>")
+    my_p.p("test")
 
     return InterfaceSequence(
         Button("Clack", my_passage),

@@ -8,3 +8,8 @@ class Output(Protocol):
 
 eid = NewType("eid", str)
 "Id of an element on the page (typically, a HTML tag)."
+
+lid = NewType("lid", int)
+"Local Id of an element inside a passage."
+
+Target = lid | None

@@ -7,7 +7,7 @@ import jsonpickle as jsp
 import troubadour.backend as be
 import troubadour.continuations as tc
 import troubadour.save as sv
-from troubadour.definitions import eid, Output
+from troubadour.definitions import Output, Target, eid, lid
 from troubadour.unique_id import get_unique_element_id
 
 T = TypeVar("T")
@@ -49,7 +49,7 @@ class ResetDialog:
 
 @dataclass
 class Element(Output):
-    id: eid
+    id: lid
     game: "Game"
 
     def p(self, html: str = "") -> "Element":
@@ -59,18 +59,33 @@ class Element(Output):
 @dataclass
 class TimeStamp:
     date: datetime.datetime
-    target: eid
+    target: Target
 
 
 @dataclass
 class RawHTML:
     html: str
-    target: eid
+    target: Target
 
 
 @dataclass
-class PassageOutput:
-    contents: list[RawHTML | TimeStamp] = field(default_factory=list)
+class Container:
+    type: str
+    html: str
+    target: Target
+    local_id: lid
+
+
+@dataclass
+class PassageOutput:  # FIXME remove next_lid + lid_to_eid
+    contents: list[RawHTML | TimeStamp | Container] = field(default_factory=list)
+    next_lid: int = 0
+    lid_to_eid: dict[lid, eid] = field(default_factory=dict)
+
+    def new_lid(self) -> lid:
+        result = self.next_lid
+        self.next_lid += 1
+        return lid(result)
 
 
 @dataclass
@@ -81,26 +96,38 @@ class Game(Output, Generic[T]):
     current_passage: PassageOutput = field(default_factory=PassageOutput)
     max_output_len: int = 10
 
-    def print(self, html: str, target: eid = eid("output")) -> None:
+    def print(self, html: str, target: Target = None) -> None:
         self.current_passage.contents.append(RawHTML(html, target))
 
-    def p(self, html: str = "", target: eid = eid("output")) -> Element:
-        id = get_unique_element_id("paragraph")
-        self.print(f"<p id='{id}'>{html}</p>", target=target)
-        return Element(id, self)
+    def p(self, html: str = "", target: Target = None) -> Element:
+        local_id = self.current_passage.new_lid()
+        self.current_passage.contents.append(Container("p", html, target, local_id))
+        return Element(local_id, self)
 
     def _timestamp(self) -> None:
         ts = datetime.datetime.now()
-        self.current_passage.contents.append(TimeStamp(ts, eid("output")))
+        self.current_passage.contents.append(TimeStamp(ts, target=None))
 
     def _render_passage(self, passage: PassageOutput) -> None:
+        passage.lid_to_eid = {}
         for out in passage.contents:
+            eid_target = (
+                passage.lid_to_eid[out.target]
+                if out.target is not None
+                else eid("output")
+            )
             match out:
-                case TimeStamp():
-                    t = out.date.strftime(r"%Y - %b %d - %H:%M:%S")
-                    be.insert_end(out.target, f"<div class='timestamp'>{t}</div>")
-                case RawHTML():
-                    be.insert_end(out.target, out.html)
+                case TimeStamp(date=date):
+                    t = date.strftime(r"%Y - %b %d - %H:%M:%S")
+                    be.insert_end(eid_target, f"<div class='timestamp'>{t}</div>")
+                case RawHTML(html=html):
+                    be.insert_end(eid_target, html)
+                case Container(type=type, html=html, local_id=local_id):
+                    element_id = get_unique_element_id("container")
+                    passage.lid_to_eid[local_id] = element_id
+                    be.insert_end(
+                        eid_target, f"<{type} id='{element_id}'>{html}</{type}>"
+                    )
 
     def _render(self) -> None:
         be.clear(eid("output"))
