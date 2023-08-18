@@ -13,7 +13,9 @@ def intro(game: Game[MyState]) -> None:
     x = game.state.hello
     game.p("<h1>Hello</h1>World lorem ipsum stuff<p/>\n")
     game.p(f"Hello worlds: <b id='youpi'>{x}</b>\n")
-    game.continuation(Button("Click", my_other_passage, dict(msg="Youpi")))
+    game.p(css={"class": "'inputzone'"}).continuation(
+        Button("Click", my_other_passage, dict(msg="Youpi"))
+    )
 
 
 def my_passage(game: Game[MyState]) -> None:
@@ -34,8 +36,7 @@ def my_passage(game: Game[MyState]) -> None:
         " congue sem. Proin consectetur, lacus quis aliquet porta, tellus"
         " diam pellentesque odio, eu ornare neque felis ac mi."
     )
-    inputs = game.p(css={"class": "'inputzone'"})
-    inputs.continuation(
+    game.p(css={"class": "'inputzone'"}).continuation(
         InterfaceSequence(
             Button("Click", my_other_passage, dict(msg="Tralala")),
             Button("Clack", my_passage),
@@ -52,8 +53,12 @@ def my_other_passage(game: Game[MyState], msg: str) -> None:
     my_p = game.p(f"This is a message: <i>{msg}</i>")
     my_p.p("test")
 
-    game.continuation(Button("Clack", my_passage))
-    game.continuation(TextButton("Display", display_stuff, "msg"))
+    game.p(css={"class": "'inputzone'"}).continuation(
+        InterfaceSequence(
+            Button("Clack", my_passage),
+            TextButton("Display", display_stuff, "msg"),
+        )
+    )
 
 
 def display_stuff(game: Game[MyState], msg: str) -> None:
@@ -62,7 +67,9 @@ def display_stuff(game: Game[MyState], msg: str) -> None:
         f" lacus quis aliquet: <i>{msg}</i>"
     )
 
-    game.continuation(Button("Click", my_other_passage, dict(msg="hello world")))
+    game.p(css={"class": "'inputzone'"}).continuation(
+        Button("Click", my_other_passage, dict(msg="hello world"))
+    )
 
 
 Game.run(MyState, intro)
