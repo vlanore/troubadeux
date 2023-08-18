@@ -53,17 +53,19 @@ class Element(Output):
     game: "Game"
 
     def p(self, html: str = "") -> "Element":
-        return self.game.p(html, self.id)
+        return self.game.p(html, target=self.id)
 
 
 @dataclass
 class TimeStamp:
     date: datetime.datetime
+    target: eid
 
 
 @dataclass
 class RawHTML:
     html: str
+    target: eid
 
 
 @dataclass
@@ -80,7 +82,7 @@ class Game(Output, Generic[T]):
     max_output_len: int = 10
 
     def print(self, html: str, target: eid = eid("output")) -> None:
-        self.current_passage.contents.append(RawHTML(html))
+        self.current_passage.contents.append(RawHTML(html, target))
         be.insert_end(eid(target), html)
 
     def p(self, html: str = "", target: eid = eid("output")) -> Element:
@@ -90,7 +92,7 @@ class Game(Output, Generic[T]):
 
     def _timestamp(self) -> None:
         ts = datetime.datetime.now()
-        self.current_passage.contents.append(TimeStamp(ts))
+        self.current_passage.contents.append(TimeStamp(ts, eid("output")))
         t = ts.strftime(r"%Y - %b %d - %H:%M:%S")
         be.insert_end(eid("output"), f"<div class='timestamp'>{t}</div>")
 
@@ -102,11 +104,9 @@ class Game(Output, Generic[T]):
                 match out:
                     case TimeStamp():
                         t = out.date.strftime(r"%Y - %b %d - %H:%M:%S")
-                        be.insert_end(
-                            eid("output"), f"<div class='timestamp'>{t}</div>"
-                        )
+                        be.insert_end(out.target, f"<div class='timestamp'>{t}</div>")
                     case RawHTML():
-                        be.insert_end(eid("output"), out.html)
+                        be.insert_end(out.target, out.html)
         if self.input_state is not None:
             self.input_state.setup(self)
         be.scroll_to_bottom(eid("output"))
