@@ -154,7 +154,7 @@ class Game(Output, Generic[T]):
         be.clear(eid("output"))
         for passage in self.output_state:
             self._render_passage(passage)
-        be.scroll_to_bottom(eid("output"))
+        be.scroll_to_bottom(eid("output-container"))
 
     @classmethod
     def cancel_dialog(cls, game: "Game") -> None:
@@ -197,7 +197,7 @@ class Game(Output, Generic[T]):
 
         # render the passage and scroll to bottom of page
         self._render_passage(self.current_passage)
-        be.scroll_to_bottom(eid("output"))
+        be.scroll_to_bottom(eid("output-container"))
 
         if not dialog:
             self.output_state.append(self.current_passage)
