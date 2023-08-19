@@ -122,6 +122,11 @@ class Game(Output, Generic[T]):
     def continuation(self, continuation: Interface, target: Target = None) -> None:
         self.current_passage.contents.append(Continuation(continuation, target=target))
 
+    def continuations(self, *continuations: Interface, target: Target = None) -> None:
+        zone = self.p(css={"class": "'inputzone'"}, target=target)
+        for continuation in continuations:
+            zone.continuation(continuation)
+
     def _timestamp(self) -> None:
         ts = datetime.datetime.now()
         self.current_passage.contents.append(TimeStamp(ts, target=None))
