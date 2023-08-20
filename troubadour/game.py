@@ -98,24 +98,24 @@ class PassageContext:
 @dataclass
 class Game(AbstractGame[T]):
     state: T
-    output_state: list[PassageOutput] = field(default_factory=list)
-    current_passage: PassageContext = field(default_factory=PassageContext)
-    max_output_len: int = 10
+    max_output_len: int = 15
+    _output: list[PassageOutput] = field(default_factory=list)
+    _current_passage: PassageContext = field(default_factory=PassageContext)
 
     def print(self, html: str, target: Target = None) -> None:
-        self.current_passage.output.contents.append(RawHTML(html, target))
+        self._current_passage.output.contents.append(RawHTML(html, target))
 
     def paragraph(
         self, html: str = "", css: dict[str, str] | None = None, target: Target = None
     ) -> Element:
-        local_id = self.current_passage.new_lid()
-        self.current_passage.output.contents.append(
+        local_id = self._current_passage.new_lid()
+        self._current_passage.output.contents.append(
             Container("p", html, (css if css is not None else {}), target, local_id)
         )
         return Element(local_id, self)
 
     def continuation(self, continuation: Continuation, target: Target = None) -> None:
-        self.current_passage.output.contents.append(
+        self._current_passage.output.contents.append(
             ContinuationElement(continuation, target=target)
         )
 
@@ -128,7 +128,7 @@ class Game(AbstractGame[T]):
 
     def _timestamp(self) -> None:
         timestamp = datetime.datetime.now()
-        self.current_passage.output.contents.append(TimeStamp(timestamp, target=None))
+        self._current_passage.output.contents.append(TimeStamp(timestamp, target=None))
 
     def _render_passage(self, passage: PassageOutput) -> None:
         context = PassageContext(passage)
@@ -157,7 +157,7 @@ class Game(AbstractGame[T]):
 
     def _render(self) -> None:
         be.clear(Eid("output"))
-        for passage in self.output_state:
+        for passage in self._output:
             self._render_passage(passage)
         be.scroll_to_bottom(Eid("output-container"))
 
@@ -188,9 +188,9 @@ class Game(AbstractGame[T]):
         be.onclick(Eid("reset"), reset_callback)
 
     def _trim_output(self) -> None:
-        if len(self.output_state) > self.max_output_len:
+        if len(self._output) > self.max_output_len:
             trim_index = -self.max_output_len
-            self.output_state = self.output_state[trim_index:]
+            self._output = self._output[trim_index:]
             self._render()
 
     def run_passage(
@@ -201,7 +201,7 @@ class Game(AbstractGame[T]):
         kwargs: dict[str, object] | None = None,
     ) -> None:
         # new empty passage
-        self.current_passage = PassageContext()
+        self._current_passage = PassageContext()
 
         if not dialog:
             self._timestamp()
@@ -210,11 +210,11 @@ class Game(AbstractGame[T]):
         passage(self, **(kwargs if kwargs is not None else {}))
 
         # render the passage and scroll to bottom of page
-        self._render_passage(self.current_passage.output)
+        self._render_passage(self._current_passage.output)
         be.scroll_to_bottom(Eid("output-container"))
 
         if not dialog:
-            self.output_state.append(self.current_passage.output)
-            self.current_passage = PassageContext()
+            self._output.append(self._current_passage.output)
+            self._current_passage = PassageContext()
             self._trim_output()
             sv.save_game(self)
