@@ -41,8 +41,8 @@ class Element(Output):
     local_id: Lid
     game: "Game"
 
-    def p(self, html: str = "") -> "Element":
-        return self.game.p(html, target=self.local_id)
+    def paragraph(self, html: str = "", css: dict[str, str] | None = None) -> "Element":
+        return self.game.paragraph(html, css=css, target=self.local_id)
 
     def continuation(self, continuation: Continuation) -> None:
         self.game.continuation(continuation, target=self.local_id)
@@ -100,12 +100,12 @@ class Game(AbstractGame[T]):
     def print(self, html: str, target: Target = None) -> None:
         self.current_passage.contents.append(RawHTML(html, target))
 
-    def p(
-        self, html: str = "", target: Target = None, css: dict[str, str] = {}
+    def paragraph(
+        self, html: str = "", css: dict[str, str] | None = None, target: Target = None
     ) -> Element:
         local_id = self.current_passage.new_lid()
         self.current_passage.contents.append(
-            Container("p", html, css, target, local_id)
+            Container("p", html, (css if css is not None else {}), target, local_id)
         )
         return Element(local_id, self)
 
@@ -117,7 +117,7 @@ class Game(AbstractGame[T]):
     def continuations(
         self, *continuations: Continuation, target: Target = None
     ) -> None:
-        zone = self.p(css={"class": "'inputzone'"}, target=target)
+        zone = self.paragraph(css={"class": "'inputzone'"}, target=target)
         for continuation in continuations:
             zone.continuation(continuation)
 

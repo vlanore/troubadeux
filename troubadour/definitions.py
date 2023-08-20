@@ -19,7 +19,7 @@ class Continuation(Protocol):
 
 
 class Output(Protocol):
-    def p(self, html: str = "") -> "Output":
+    def paragraph(self, html: str = "", css: dict[str, str] | None = None) -> "Output":
         ...
 
     # def raw_html(self, html: str = "") -> None:
