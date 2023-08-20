@@ -1,3 +1,5 @@
+"Main troubadour module that implements the Game class."
+
 import datetime
 from dataclasses import dataclass, field
 from typing import Callable, TypeVar
@@ -32,11 +34,6 @@ class ResetDialog:
 
         tc.Button("Reset", cls.perform_reset, dialog=True).setup(_game)
         tc.Button("Cancel", Game.cancel_dialog, dialog=True).setup(_game)
-
-    @classmethod
-    def callback(cls, _) -> None:
-        game = sv.load_game()
-        game.run_passage(cls.dialog, dialog=True)
 
 
 @dataclass
@@ -171,7 +168,7 @@ class Game(AbstractGame[T]):
             game = Game(StateCls())
             game.run_passage(start_passage)
         else:
-            game = sv.load_game()
+            game = sv.load_game(Game)
             game._render()  # pylint: disable=W0212
 
         # export button
@@ -180,7 +177,10 @@ class Game(AbstractGame[T]):
         be.file_download_button(Eid("export"), game_json, "troubadour.json")
 
         # reset button
-        be.onclick(Eid("reset"), ResetDialog.callback)
+        def reset_callback(_) -> None:
+            game.run_passage(ResetDialog.dialog, dialog=True)
+
+        be.onclick(Eid("reset"), reset_callback)
 
     def _trim_output(self) -> None:
         if len(self.output_state) > self.max_output_len:

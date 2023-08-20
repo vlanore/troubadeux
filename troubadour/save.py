@@ -1,12 +1,14 @@
-from __future__ import annotations
+"Various helper functions to load/save games in local storage."
+
+from typing import TypeVar
 
 import jsonpickle as jsp
 
 import troubadour.backend as be
-import troubadour.game as tg
+from troubadour.definitions import AbstractGame
 
 
-def save_game(game: tg.Game) -> None:
+def save_game(game: AbstractGame) -> None:
     # store in local memory
     be.local_storage["troubadour_state"] = game
 
@@ -16,8 +18,11 @@ def save_game(game: tg.Game) -> None:
     be.file_download_button("export", json_source, "save.json")
 
 
-def load_game() -> tg.Game:
-    return be.local_storage(tg.Game)["troubadour_state"]
+T = TypeVar("T")
+
+
+def load_game(game_type: type[T]) -> T:
+    return be.local_storage(game_type)["troubadour_state"]
 
 
 def state_exists() -> bool:

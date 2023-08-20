@@ -1,3 +1,5 @@
+"Functions that provides unique identifiers, meant to be used as html ids."
+
 from dataclasses import dataclass
 
 from troubadour.definitions import Eid
