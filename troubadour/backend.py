@@ -9,7 +9,7 @@ from pyodide.code import run_js  # type: ignore
 from pyodide.ffi import create_proxy  # type: ignore
 from pyscript import Element  # type: ignore
 
-from troubadour.definitions import eid
+from troubadour.definitions import Eid
 
 
 def pyscript_version() -> str:
@@ -17,7 +17,7 @@ def pyscript_version() -> str:
     return pyscript.__version__
 
 
-def onclick(id: eid, func: Callable[[Any], None]) -> None:
+def onclick(id: Eid, func: Callable[[Any], None]) -> None:
     """Add on click callback to element.
 
     Args:
@@ -27,55 +27,55 @@ def onclick(id: eid, func: Callable[[Any], None]) -> None:
     Element(id).element.addEventListener("click", create_proxy(func))
 
 
-def onload(id: eid, func: Callable[[Any], None]) -> None:
+def onload(id: Eid, func: Callable[[Any], None]) -> None:
     Element(id).element.addEventListener("load", create_proxy(func))
 
 
-def insert_end(id: eid, html: str) -> None:
+def insert_end(id: Eid, html: str) -> None:
     Element(id).element.insertAdjacentHTML("beforeend", html)
 
 
-def set_html(id: eid, html: str) -> None:
+def set_html(id: Eid, html: str) -> None:
     Element(id).element.innerHTML = html
 
 
-def get_html(id: eid) -> str:
+def get_html(id: Eid) -> str:
     return Element(id).element.innerHTML
 
 
-def clear(id: eid) -> None:
+def clear(id: Eid) -> None:
     set_html(id, "")
 
 
-def click(id: eid) -> None:
+def click(id: Eid) -> None:
     Element(id).element.click()
 
 
-def set_src(id: eid, value: str) -> None:
+def set_src(id: Eid, value: str) -> None:
     Element(id).element.src = value
 
 
-def set_alt(id: eid, value: str) -> None:
+def set_alt(id: Eid, value: str) -> None:
     Element(id).element.alt = value
 
 
-def get_value(id: eid) -> str:
+def get_value(id: Eid) -> str:
     return Element(id).element.value
 
 
-def add_class(id: eid, cls: str) -> None:
+def add_class(id: Eid, cls: str) -> None:
     Element(id).add_class(cls)
 
 
-def remove_class(id: eid, cls: str) -> None:
+def remove_class(id: Eid, cls: str) -> None:
     Element(id).remove_class(cls)
 
 
-def set_display(id: eid, display: str) -> None:
+def set_display(id: Eid, display: str) -> None:
     Element(id).element.style.display = display
 
 
-def scroll_to_bottom(id: eid) -> None:
+def scroll_to_bottom(id: Eid) -> None:
     tgt = Element(id).element
     tgt.scrollTop = tgt.scrollHeight
 

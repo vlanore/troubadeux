@@ -7,7 +7,7 @@ import jsonpickle as jsp
 import troubadour.backend as be
 import troubadour.continuations as tc
 import troubadour.save as sv
-from troubadour.definitions import AbstractGame, Continuation, Output, Target, eid, lid
+from troubadour.definitions import AbstractGame, Continuation, Output, Target, Eid, Lid
 from troubadour.unique_id import get_unique_element_id
 
 T = TypeVar("T")
@@ -22,7 +22,7 @@ class ResetDialog:
     @classmethod
     def dialog(cls, _game: "Game") -> None:
         be.insert_end(
-            eid("output"),
+            Eid("output"),
             (
                 "<h1>Game reset</h1>"
                 "<p>Are you sure you want to reset?</p>"
@@ -36,12 +36,12 @@ class ResetDialog:
     @classmethod
     def callback(cls, _) -> None:
         game = sv.load_game()
-        game._run_passage(cls.dialog, dialog=True)
+        game.run_passage(cls.dialog, dialog=True)
 
 
 @dataclass
 class Element(Output):
-    id: lid
+    id: Lid
     game: "Game"
 
     def p(self, html: str = "") -> "Element":
@@ -69,7 +69,7 @@ class Container:
     html: str
     css: dict[str, str]
     target: Target
-    local_id: lid
+    local_id: Lid
 
 
 @dataclass
@@ -85,12 +85,12 @@ PassageElement = RawHTML | TimeStamp | Container | ContinuationElement
 class PassageOutput:  # FIXME remove next_lid + lid_to_eid
     contents: list[PassageElement] = field(default_factory=list)
     next_lid: int = 0
-    lid_to_eid: dict[lid, eid] = field(default_factory=dict)
+    lid_to_eid: dict[Lid, Eid] = field(default_factory=dict)
 
-    def new_lid(self) -> lid:
+    def new_lid(self) -> Lid:
         result = self.next_lid
         self.next_lid += 1
-        return lid(result)
+        return Lid(result)
 
 
 @dataclass
@@ -134,7 +134,7 @@ class Game(AbstractGame[T]):
             eid_target = (
                 passage.lid_to_eid[out.target]
                 if out.target is not None
-                else eid("output")
+                else Eid("output")
             )
             match out:
                 case TimeStamp(date=date):
@@ -153,10 +153,10 @@ class Game(AbstractGame[T]):
                     continuation.setup(self, eid_target)
 
     def _render(self) -> None:
-        be.clear(eid("output"))
+        be.clear(Eid("output"))
         for passage in self.output_state:
             self._render_passage(passage)
-        be.scroll_to_bottom(eid("output-container"))
+        be.scroll_to_bottom(Eid("output-container"))
 
     @classmethod
     def cancel_dialog(cls, game: "Game") -> None:
@@ -166,7 +166,7 @@ class Game(AbstractGame[T]):
     def run(cls, StateCls: type, start_passage: Callable) -> None:
         if not sv.state_exists():
             game = Game(StateCls())
-            game._run_passage(start_passage)
+            game.run_passage(start_passage)
         else:
             game = sv.load_game()
             game._render()
@@ -174,10 +174,10 @@ class Game(AbstractGame[T]):
         # export button
         game_json = jsp.encode(game)
         assert game_json is not None
-        be.file_download_button(eid("export"), game_json, "troubadour.json")
+        be.file_download_button(Eid("export"), game_json, "troubadour.json")
 
         # reset button
-        be.onclick(eid("reset"), ResetDialog.callback)
+        be.onclick(Eid("reset"), ResetDialog.callback)
 
     def _trim_output(self) -> None:
         if len(self.output_state) > self.max_output_len:
@@ -185,8 +185,12 @@ class Game(AbstractGame[T]):
             self.output_state = self.output_state[trim_index:]
             self._render()
 
-    def _run_passage(
-        self, passage: Callable, *, dialog: bool = False, kwargs: dict[str, object] = {}
+    def run_passage(
+        self,
+        passage: Callable,
+        *,
+        dialog: bool = False,
+        kwargs: dict[str, object] | None = None,
     ) -> None:
         # new empty passage
         self.current_passage = PassageOutput()
@@ -194,12 +198,12 @@ class Game(AbstractGame[T]):
         if not dialog:
             self._timestamp()
         else:
-            be.clear(eid("output"))  # if dialog then need to clear whole output
-        passage(self, **kwargs)
+            be.clear(Eid("output"))  # if dialog then need to clear whole output
+        passage(self, **(kwargs if kwargs is not None else {}))
 
         # render the passage and scroll to bottom of page
         self._render_passage(self.current_passage)
-        be.scroll_to_bottom(eid("output-container"))
+        be.scroll_to_bottom(Eid("output-container"))
 
         if not dialog:
             self.output_state.append(self.current_passage)
