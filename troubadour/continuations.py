@@ -4,28 +4,27 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 import troubadour.backend as be
-import troubadour.game as tg
-from troubadour.definitions import eid
+from troubadour.definitions import AbstractGame, Continuation, eid
 from troubadour.unique_id import get_unique_element_id
 
 
-class InterfaceSequence:
-    def __init__(self, *continuations: tg.Interface):
+class InterfaceSequence(Continuation):
+    def __init__(self, *continuations: Continuation):
         self.lst = [*continuations]
 
-    def setup(self, game: tg.Game, target: eid = eid("output")) -> None:
+    def setup(self, game: AbstractGame, target: eid = eid("output")) -> None:
         for cont in self.lst:
             cont.setup(game, target)
 
 
 @dataclass
-class Button:
+class Button(Continuation):
     txt: str
     passage: Callable
     kwargs: dict[str, object] = field(default_factory=dict)
     dialog: bool = False
 
-    def setup(self, game: tg.Game, target: eid = eid("output")) -> None:
+    def setup(self, game: AbstractGame, target: eid = eid("output")) -> None:
         id = get_unique_element_id("button")
         be.insert_end(target, f"<button type='button' id='{id}'>{self.txt}</button>")
         be.onclick(
@@ -37,7 +36,7 @@ class Button:
 
 
 @dataclass
-class TextButton:
+class TextButton(Continuation):
     txt: str
     passage: Callable
     value_kw: str
@@ -45,7 +44,7 @@ class TextButton:
     dialog: bool = False
     convertor: Callable[[Any], str] = str
 
-    def setup(self, game: tg.Game, target: eid = eid("output")) -> None:
+    def setup(self, game: AbstractGame, target: eid = eid("output")) -> None:
         text_id = get_unique_element_id("textinput")
         button_id = get_unique_element_id("button")
         be.insert_end(target, f"<input type='text' id='{text_id}'></input>")

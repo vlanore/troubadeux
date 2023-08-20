@@ -1,23 +1,16 @@
 import datetime
 from dataclasses import dataclass, field
-from typing import Callable, Generic, Protocol, TypeVar
+from typing import Callable, TypeVar
 
 import jsonpickle as jsp
 
 import troubadour.backend as be
 import troubadour.continuations as tc
 import troubadour.save as sv
-from troubadour.definitions import Output, Target, eid, lid
+from troubadour.definitions import AbstractGame, Continuation, Output, Target, eid, lid
 from troubadour.unique_id import get_unique_element_id
 
 T = TypeVar("T")
-
-
-class Interface(Protocol):
-    "Inputs are user interface elements"
-
-    def setup(self, game: "Game", target: eid = eid("output")) -> None:
-        ...
 
 
 class ResetDialog:
@@ -54,7 +47,7 @@ class Element(Output):
     def p(self, html: str = "") -> "Element":
         return self.game.p(html, target=self.id)
 
-    def continuation(self, continuation: Interface) -> None:
+    def continuation(self, continuation: Continuation) -> None:
         self.game.continuation(continuation, target=self.id)
 
 
@@ -80,12 +73,12 @@ class Container:
 
 
 @dataclass
-class Continuation:
-    continuation: Interface
+class ContinuationElement:
+    continuation: Continuation
     target: Target
 
 
-PassageElement = RawHTML | TimeStamp | Container | Continuation
+PassageElement = RawHTML | TimeStamp | Container | ContinuationElement
 
 
 @dataclass
@@ -101,7 +94,7 @@ class PassageOutput:  # FIXME remove next_lid + lid_to_eid
 
 
 @dataclass
-class Game(Output, Generic[T]):
+class Game(AbstractGame[T]):
     state: T
     output_state: list[PassageOutput] = field(default_factory=list)
     current_passage: PassageOutput = field(default_factory=PassageOutput)
@@ -119,10 +112,14 @@ class Game(Output, Generic[T]):
         )
         return Element(local_id, self)
 
-    def continuation(self, continuation: Interface, target: Target = None) -> None:
-        self.current_passage.contents.append(Continuation(continuation, target=target))
+    def continuation(self, continuation: Continuation, target: Target = None) -> None:
+        self.current_passage.contents.append(
+            ContinuationElement(continuation, target=target)
+        )
 
-    def continuations(self, *continuations: Interface, target: Target = None) -> None:
+    def continuations(
+        self, *continuations: Continuation, target: Target = None
+    ) -> None:
         zone = self.p(css={"class": "'inputzone'"}, target=target)
         for continuation in continuations:
             zone.continuation(continuation)
@@ -152,7 +149,7 @@ class Game(Output, Generic[T]):
                     be.insert_end(
                         eid_target, f"<{type} {rcss} id='{element_id}'>{html}</{type}>"
                     )
-                case Continuation(continuation=continuation):
+                case ContinuationElement(continuation=continuation):
                     continuation.setup(self, eid_target)
 
     def _render(self) -> None:
