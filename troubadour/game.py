@@ -79,8 +79,13 @@ PassageElement = RawHTML | TimeStamp | Container | ContinuationElement
 
 
 @dataclass
-class PassageOutput:  # FIXME remove next_lid + lid_to_eid
+class PassageOutput:
     contents: list[PassageElement] = field(default_factory=list)
+
+
+@dataclass
+class PassageContext:
+    output: PassageOutput = field(default_factory=PassageOutput)
     next_lid: int = 0
     lid_to_eid: dict[Lid, Eid] = field(default_factory=dict)
 
@@ -94,23 +99,23 @@ class PassageOutput:  # FIXME remove next_lid + lid_to_eid
 class Game(AbstractGame[T]):
     state: T
     output_state: list[PassageOutput] = field(default_factory=list)
-    current_passage: PassageOutput = field(default_factory=PassageOutput)
+    current_passage: PassageContext = field(default_factory=PassageContext)
     max_output_len: int = 10
 
     def print(self, html: str, target: Target = None) -> None:
-        self.current_passage.contents.append(RawHTML(html, target))
+        self.current_passage.output.contents.append(RawHTML(html, target))
 
     def paragraph(
         self, html: str = "", css: dict[str, str] | None = None, target: Target = None
     ) -> Element:
         local_id = self.current_passage.new_lid()
-        self.current_passage.contents.append(
+        self.current_passage.output.contents.append(
             Container("p", html, (css if css is not None else {}), target, local_id)
         )
         return Element(local_id, self)
 
     def continuation(self, continuation: Continuation, target: Target = None) -> None:
-        self.current_passage.contents.append(
+        self.current_passage.output.contents.append(
             ContinuationElement(continuation, target=target)
         )
 
@@ -123,13 +128,13 @@ class Game(AbstractGame[T]):
 
     def _timestamp(self) -> None:
         timestamp = datetime.datetime.now()
-        self.current_passage.contents.append(TimeStamp(timestamp, target=None))
+        self.current_passage.output.contents.append(TimeStamp(timestamp, target=None))
 
     def _render_passage(self, passage: PassageOutput) -> None:
-        passage.lid_to_eid = {}
+        context = PassageContext(passage)
         for out in passage.contents:
             eid_target = (
-                passage.lid_to_eid[out.target]
+                context.lid_to_eid[out.target]
                 if out.target is not None
                 else Eid("output")
             )
@@ -141,7 +146,7 @@ class Game(AbstractGame[T]):
                     be.insert_end(eid_target, html)
                 case Container(markup=markup, html=html, css=css, local_id=local_id):
                     element_id = get_unique_element_id("container")
-                    passage.lid_to_eid[local_id] = element_id
+                    context.lid_to_eid[local_id] = element_id
                     rcss = " ".join(f"{key}={value}" for key, value in css.items())
                     be.insert_end(
                         eid_target,
@@ -196,7 +201,7 @@ class Game(AbstractGame[T]):
         kwargs: dict[str, object] | None = None,
     ) -> None:
         # new empty passage
-        self.current_passage = PassageOutput()
+        self.current_passage = PassageContext()
 
         if not dialog:
             self._timestamp()
@@ -205,11 +210,11 @@ class Game(AbstractGame[T]):
         passage(self, **(kwargs if kwargs is not None else {}))
 
         # render the passage and scroll to bottom of page
-        self._render_passage(self.current_passage)
+        self._render_passage(self.current_passage.output)
         be.scroll_to_bottom(Eid("output-container"))
 
         if not dialog:
-            self.output_state.append(self.current_passage)
-            self.current_passage = PassageOutput()
+            self.output_state.append(self.current_passage.output)
+            self.current_passage = PassageContext()
             self._trim_output()
             sv.save_game(self)
