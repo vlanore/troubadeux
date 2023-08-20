@@ -181,6 +181,13 @@ class Game(AbstractGame[T]):
         assert game_json is not None
         be.file_download_button(Eid("export"), game_json, "troubadour.json")
 
+        # import button
+        def load_from_file(extracted_game: Game):
+            sv.save_game(extracted_game)
+            be.refresh_page()
+
+        be.on_file_upload(Eid("import"), load_from_file, Game)
+
         # reset button
         def reset_callback(_) -> None:
             game.run_passage(ResetDialog.dialog, dialog=True)
