@@ -1,37 +1,36 @@
-from __future__ import annotations
+"Implements a series of simple continuations, such as button and simple text fields."
 
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
 import troubadour.backend as be
-import troubadour.game as tg
-from troubadour.definitions import eid
+from troubadour.definitions import AbstractGame, Continuation, Eid
 from troubadour.unique_id import get_unique_element_id
 
 
-class InterfaceSequence:
-    def __init__(self, *continuations: tg.Interface):
+class InterfaceSequence(Continuation):
+    def __init__(self, *continuations: Continuation):
         self.lst = [*continuations]
 
-    def setup(self, game: tg.Game) -> None:
+    def setup(self, game: AbstractGame, target: Eid = Eid("output")) -> None:
         for cont in self.lst:
-            cont.setup(game)
+            cont.setup(game, target)
 
 
 @dataclass
-class Button:
+class Button(Continuation):
     txt: str
     passage: Callable
     kwargs: dict[str, object] = field(default_factory=dict)
     dialog: bool = False
 
-    def setup(self, game: tg.Game) -> None:
-        id = get_unique_element_id("button")
+    def setup(self, game: AbstractGame, target: Eid = Eid("output")) -> None:
+        button_id = get_unique_element_id("button")
         be.insert_end(
-            eid("input"), f"<button type='button' id='{id}'>{self.txt}</button>"
+            target, f"<button type='button' id='{button_id}'>{self.txt}</button>"
         )
         be.onclick(
-            id,
+            button_id,
             lambda _: game.run_passage(
                 self.passage, kwargs=self.kwargs, dialog=self.dialog
             ),
@@ -39,7 +38,7 @@ class Button:
 
 
 @dataclass
-class TextButton:
+class TextButton(Continuation):
     txt: str
     passage: Callable
     value_kw: str
@@ -47,12 +46,12 @@ class TextButton:
     dialog: bool = False
     convertor: Callable[[Any], str] = str
 
-    def setup(self, game: tg.Game) -> None:
+    def setup(self, game: AbstractGame, target: Eid = Eid("output")) -> None:
         text_id = get_unique_element_id("textinput")
         button_id = get_unique_element_id("button")
-        be.insert_end(eid("input"), f"<input type='text' id='{text_id}'></input>")
+        be.insert_end(target, f"<input type='text' id='{text_id}'></input>")
         be.insert_end(
-            eid("input"),
+            target,
             (
                 "<button class='textbutton' type='button' "
                 f"id='{button_id}'>{self.txt}</button>"
