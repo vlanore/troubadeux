@@ -1,3 +1,5 @@
+"Small troubadour demo and test file."
+
 from dataclasses import dataclass
 
 from troubadour.continuations import Button, TextButton
@@ -61,7 +63,7 @@ def display_stuff(game: Game[MyState], msg: str) -> None:
         f" lacus quis aliquet: <i>{msg}</i>"
     )
 
-    game.continuations(Button("Click", my_other_passage, dict(msg="hello world")))
+    game.continuations(Button("Click", my_other_passage, {"msg": "hello world"}))
 
 
 Game.run(MyState, intro)

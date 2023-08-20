@@ -1,3 +1,5 @@
+"Implements a series of simple continuations, such as button and simple text fields."
+
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
@@ -23,10 +25,12 @@ class Button(Continuation):
     dialog: bool = False
 
     def setup(self, game: AbstractGame, target: Eid = Eid("output")) -> None:
-        id = get_unique_element_id("button")
-        be.insert_end(target, f"<button type='button' id='{id}'>{self.txt}</button>")
+        button_id = get_unique_element_id("button")
+        be.insert_end(
+            target, f"<button type='button' id='{button_id}'>{self.txt}</button>"
+        )
         be.onclick(
-            id,
+            button_id,
             lambda _: game.run_passage(
                 self.passage, kwargs=self.kwargs, dialog=self.dialog
             ),

@@ -41,14 +41,14 @@ class ResetDialog:
 
 @dataclass
 class Element(Output):
-    id: Lid
+    local_id: Lid
     game: "Game"
 
     def p(self, html: str = "") -> "Element":
-        return self.game.p(html, target=self.id)
+        return self.game.p(html, target=self.local_id)
 
     def continuation(self, continuation: Continuation) -> None:
-        self.game.continuation(continuation, target=self.id)
+        self.game.continuation(continuation, target=self.local_id)
 
 
 @dataclass
@@ -65,7 +65,7 @@ class RawHTML:
 
 @dataclass
 class Container:
-    type: str
+    markup: str
     html: str
     css: dict[str, str]
     target: Target
@@ -125,8 +125,8 @@ class Game(AbstractGame[T]):
             zone.continuation(continuation)
 
     def _timestamp(self) -> None:
-        ts = datetime.datetime.now()
-        self.current_passage.contents.append(TimeStamp(ts, target=None))
+        timestamp = datetime.datetime.now()
+        self.current_passage.contents.append(TimeStamp(timestamp, target=None))
 
     def _render_passage(self, passage: PassageOutput) -> None:
         passage.lid_to_eid = {}
@@ -142,12 +142,13 @@ class Game(AbstractGame[T]):
                     be.insert_end(eid_target, f"<div class='timestamp'>{t}</div>")
                 case RawHTML(html=html):
                     be.insert_end(eid_target, html)
-                case Container(type=type, html=html, css=css, local_id=local_id):
+                case Container(markup=markup, html=html, css=css, local_id=local_id):
                     element_id = get_unique_element_id("container")
                     passage.lid_to_eid[local_id] = element_id
                     rcss = " ".join(f"{key}={value}" for key, value in css.items())
                     be.insert_end(
-                        eid_target, f"<{type} {rcss} id='{element_id}'>{html}</{type}>"
+                        eid_target,
+                        f"<{markup} {rcss} id='{element_id}'>{html}</{markup}>",
                     )
                 case ContinuationElement(continuation=continuation):
                     continuation.setup(self, eid_target)
@@ -160,16 +161,18 @@ class Game(AbstractGame[T]):
 
     @classmethod
     def cancel_dialog(cls, game: "Game") -> None:
-        game._render()
+        game._render()  # pylint: disable=W0212
 
     @classmethod
-    def run(cls, StateCls: type, start_passage: Callable) -> None:
+    def run(
+        cls, StateCls: type, start_passage: Callable  # pylint: disable=C0103
+    ) -> None:
         if not sv.state_exists():
             game = Game(StateCls())
             game.run_passage(start_passage)
         else:
             game = sv.load_game()
-            game._render()
+            game._render()  # pylint: disable=W0212
 
         # export button
         game_json = jsp.encode(game)
