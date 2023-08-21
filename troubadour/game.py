@@ -220,8 +220,11 @@ class Game(AbstractGame[T]):
         passage(self, **(kwargs if kwargs is not None else {}))
 
         # render the passage and scroll to bottom of page
+        anchor_id = get_unique_element_id("anchor")
+        self.raw_html(f"<span id='{anchor_id}'>")
         self._render_passage(self._current_passage.output)
-        be.scroll_to_bottom(Eid("output-container"))
+        be.scroll_into_view(Eid(anchor_id))
+        # be.scroll_to_bottom(Eid("output-container"))
 
         self._output.append(self._current_passage.output)
         self._current_passage = PassageContext()
