@@ -14,10 +14,23 @@
     <div id="box">
         <div id="menu">
             <a id="export" href="#"><button>Export</button></a>
-            <button> Import </button>
+            <label><input id="import" type="file" style="display:none" /><button
+                    style="pointer-events: none;">Import</button></label>
             <button id="reset"> Reset </button>
         </div>
-        <div id="output-container"> <div id="output"> </div> </div>
+        <div id="output-container">
+            <div id="output"> </div>
+        </div>
+    </div>
+    <div id="modal-bg" style="display: none;">
+        <div id="modal">
+            <h2>Game reset</h2>
+            <p>Are you sure you want to reset?</p>
+            <p>This will <b>erase all game data</b></p>
+            <p style="text-align: right; margin-bottom: 0; margin-top: 1.5em;">
+                <button id="reset-button">Reset</button> <button id="reset-cancel-button">Cancel</button>
+            </p>
+        </div>
     </div>
 </body>
 

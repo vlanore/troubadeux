@@ -147,3 +147,23 @@ button.download = "{filename}";
         """
     )
     # FIXME revoke url
+
+
+def on_file_upload(
+    id: Eid,
+    callback: Callable[[str], None] | Callable[[T], None],
+    cls: Optional[Type[T]] = None,
+) -> None:
+    async def event_handler(event: Any, cb: Callable = callback) -> None:
+        file_list = event.target.files.to_py()
+        for f in file_list:
+            raw = await f.text()
+            if cls is None:
+                cb(raw)
+            else:
+                decoded = jsp.decode(raw)
+                assert isinstance(decoded, cls)
+                cb(decoded)
+        Element(id).element.value = ""
+
+    Element(id).element.addEventListener("change", create_proxy(event_handler))

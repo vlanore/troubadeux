@@ -2,8 +2,7 @@
 
 from dataclasses import dataclass
 
-from troubadour.continuations import Button, TextButton
-from troubadour.game import Game
+from troubadour import Button, TextButton, Game
 
 
 @dataclass
@@ -13,14 +12,14 @@ class MyState:
 
 def intro(game: Game[MyState]) -> None:
     x = game.state.hello
-    game.p("<h1>Hello</h1>World lorem ipsum stuff<p/>\n")
-    game.p(f"Hello worlds: <b id='youpi'>{x}</b>\n")
+    game.paragraph("<h1>Hello</h1>World lorem ipsum stuff<p/>\n")
+    game.paragraph(f"Hello worlds: <b id='youpi'>{x}</b>\n")
     game.continuations(Button("Click", my_other_passage, dict(msg="Youpi")))
 
 
 def my_passage(game: Game[MyState]) -> None:
     game.state.hello += 1
-    game.p(
+    game.paragraph(
         "Praesent leo diam, scelerisque dapibus commodo ut, facilisis sit amet "
         "felis. Donec libero lacus, interdum a tortor sed, vestibulum suipit nunc."
         " Aenean in imperdiet tortor. Curabitur ultricies, elit ut ullamcorper"
@@ -30,7 +29,7 @@ def my_passage(game: Game[MyState]) -> None:
         " congue sem. Proin consectetur, lacus quis aliquet porta, tellus"
         " diam pellentesque odio, eu ornare neque felis ac mi."
     )
-    game.p(
+    game.paragraph(
         "Donec varius velit ac felis auctor, eu efficitur purus rutrum."
         " Fusce id pharetra lacus. Nullam quis dignissim sapien, pulvinar"
         " congue sem. Proin consectetur, lacus quis aliquet porta, tellus"
@@ -43,13 +42,13 @@ def my_passage(game: Game[MyState]) -> None:
 
 
 def my_other_passage(game: Game[MyState], msg: str) -> None:
-    game.p(f"Hi: <b>{game.state.hello}</b>")
-    game.p(
+    game.paragraph(f"Hi: <b>{game.state.hello}</b>")
+    game.paragraph(
         "Fusce id pharetra lacus. Nullam quis dignissim sapien, pulvinar"
         " congue sem. Proin consectetur, lacus quis aliquet."
     )
-    my_p = game.p(f"This is a message: <i>{msg}</i>")
-    my_p.p("test")
+    my_p = game.paragraph(f"This is a message: <i>{msg}</i>")
+    my_p.paragraph("test")
 
     game.continuations(
         Button("Clack", my_passage),
@@ -58,12 +57,12 @@ def my_other_passage(game: Game[MyState], msg: str) -> None:
 
 
 def display_stuff(game: Game[MyState], msg: str) -> None:
-    game.p(
+    game.paragraph(
         "Nullam quis dignissim sapien, pulvinar congue sem. Proin consectetur,"
         f" lacus quis aliquet: <i>{msg}</i>"
     )
 
-    game.continuations(Button("Click", my_other_passage, {"msg": "hello world"}))
+    game.continuations(Button("Click", my_other_passage, dict(msg="hello world")))
 
 
 Game.run(MyState, intro)
