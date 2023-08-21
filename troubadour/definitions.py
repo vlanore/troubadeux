@@ -39,7 +39,6 @@ class AbstractGame(Output, Protocol, Generic[T]):
         self,
         passage: Callable,
         *,
-        dialog: bool = False,
         kwargs: dict[str, object] | None = None,
     ) -> None:
         ...

@@ -191,24 +191,19 @@ class Game(AbstractGame[T]):
         self,
         passage: Callable,
         *,
-        dialog: bool = False,
         kwargs: dict[str, object] | None = None,
     ) -> None:
         # new empty passage
         self._current_passage = PassageContext()
 
-        if not dialog:
-            self._timestamp()
-        else:
-            be.clear(Eid("output"))  # if dialog then need to clear whole output
+        self._timestamp()
         passage(self, **(kwargs if kwargs is not None else {}))
 
         # render the passage and scroll to bottom of page
         self._render_passage(self._current_passage.output)
         be.scroll_to_bottom(Eid("output-container"))
 
-        if not dialog:
-            self._output.append(self._current_passage.output)
-            self._current_passage = PassageContext()
-            self._trim_output()
-            sv.save_game(self)
+        self._output.append(self._current_passage.output)
+        self._current_passage = PassageContext()
+        self._trim_output()
+        sv.save_game(self)

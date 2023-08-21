@@ -31,9 +31,7 @@ class Button(Continuation):
         )
         be.onclick(
             button_id,
-            lambda _: game.run_passage(
-                self.passage, kwargs=self.kwargs, dialog=self.dialog
-            ),
+            lambda _: game.run_passage(self.passage, kwargs=self.kwargs),
         )
 
 
@@ -43,7 +41,6 @@ class TextButton(Continuation):
     passage: Callable
     value_kw: str
     kwargs: dict[str, object] = field(default_factory=dict)
-    dialog: bool = False
     convertor: Callable[[Any], str] = str
 
     def setup(self, game: AbstractGame, target: Eid = Eid("output")) -> None:
@@ -61,6 +58,6 @@ class TextButton(Continuation):
         def callback(_):
             value = self.convertor(be.get_value(text_id))
             full_kwargs = {self.value_kw: value, **self.kwargs}
-            game.run_passage(self.passage, kwargs=full_kwargs, dialog=self.dialog)
+            game.run_passage(self.passage, kwargs=full_kwargs)
 
         be.onclick(button_id, callback)
