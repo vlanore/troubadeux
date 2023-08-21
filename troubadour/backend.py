@@ -80,6 +80,11 @@ def scroll_to_bottom(id: Eid) -> None:
     tgt.scrollTop = tgt.scrollHeight
 
 
+def scroll_into_view(id: Eid) -> None:
+    tgt = Element(id).element
+    tgt.scrollIntoView(behavior="smooth")
+
+
 def refresh_page() -> None:
     run_js("location.reload();")
 
