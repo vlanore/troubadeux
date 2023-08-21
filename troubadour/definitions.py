@@ -22,6 +22,11 @@ class Output(Protocol):
     def paragraph(self, html: str = "", css: dict[str, str] | None = None) -> "Output":
         ...
 
+    def container(
+        self, markup: str, html: str = "", css: dict[str, str] | None = None
+    ) -> "Output":
+        ...
+
     def raw_html(self, html: str = "") -> None:
         ...
 

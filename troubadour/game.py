@@ -20,6 +20,14 @@ class Element(Output):
     def paragraph(self, html: str = "", css: dict[str, str] | None = None) -> "Element":
         return self.game.paragraph(html, css=css, target=self.local_id)
 
+    def container(
+        self,
+        markup: str,
+        html: str = "",
+        css: dict[str, str] | None = None,
+    ) -> "Element":
+        return self.game.container(markup, html, css=css, target=self.local_id)
+
     def raw_html(self, html: str = "") -> None:
         return self.game.raw_html(html, target=self.local_id)
 
@@ -96,9 +104,18 @@ class Game(AbstractGame[T]):
     def paragraph(
         self, html: str = "", css: dict[str, str] | None = None, target: Target = None
     ) -> Element:
+        return self.container("p", html=html, css=css, target=target)
+
+    def container(
+        self,
+        markup: str,
+        html: str = "",
+        css: dict[str, str] | None = None,
+        target: Target = None,
+    ) -> Element:
         local_id = self._current_passage.new_lid()
         self._current_passage.output.contents.append(
-            Container("p", html, (css if css is not None else {}), target, local_id)
+            Container(markup, html, (css if css is not None else {}), target, local_id)
         )
         return Element(local_id, self)
 
