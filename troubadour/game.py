@@ -4,8 +4,6 @@ import datetime
 from dataclasses import dataclass, field
 from typing import Callable, TypeVar
 
-import jsonpickle as jsp
-
 import troubadour.backend as be
 import troubadour.save as sv
 from troubadour.definitions import AbstractGame, Continuation, Output, Target, Eid, Lid
@@ -155,9 +153,7 @@ class Game(AbstractGame[T]):
             game._render()  # pylint: disable=W0212
 
         # export button
-        game_json = jsp.encode(game)
-        assert game_json is not None
-        be.file_download_button(Eid("export"), game_json, "troubadour.json")
+        sv.setup_export_button(game)
 
         # import button
         def load_from_file(extracted_game: Game):

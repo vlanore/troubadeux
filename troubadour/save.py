@@ -13,9 +13,13 @@ def save_game(game: AbstractGame) -> None:
     be.local_storage["troubadour_state"] = game
 
     # prepare export button
+    setup_export_button(game)
+
+
+def setup_export_button(game: AbstractGame) -> None:
     json_source = jsp.encode(game)
     assert json_source is not None
-    be.file_download_button("export", json_source, "save.json")
+    be.file_download_button("export", json_source, "troubadour.json")
 
 
 T = TypeVar("T")
