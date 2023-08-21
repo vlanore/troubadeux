@@ -14,7 +14,12 @@ Target = Lid | None
 class Continuation(Protocol):
     "Inputs are user interface elements"
 
-    def setup(self, game: "AbstractGame", target: "Eid" = Eid("output")) -> None:
+    def setup(
+        self,
+        game: "AbstractGame",
+        target: "Eid" = Eid("output"),
+        disabled: bool = False,
+    ) -> None:
         ...
 
 

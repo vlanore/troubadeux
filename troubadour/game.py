@@ -97,6 +97,7 @@ class Game(AbstractGame[T]):
     max_output_len: int = 15
     _output: list[PassageOutput] = field(default_factory=list)
     _current_passage: PassageContext = field(default_factory=PassageContext)
+    _last_passage: Eid | None = None
 
     def print(self, html: str, target: Target = None) -> None:
         self._current_passage.output.contents.append(RawHTML(html, target))
@@ -141,13 +142,16 @@ class Game(AbstractGame[T]):
         timestamp = datetime.datetime.now()
         self._current_passage.output.contents.append(TimeStamp(timestamp, target=None))
 
-    def _render_passage(self, passage: PassageOutput) -> None:
+    def _render_passage(self, passage: PassageOutput, disabled: bool = False) -> None:
         context = PassageContext(passage)
+        passage_id = get_unique_element_id("passage")
+        self._last_passage = passage_id
+        be.insert_end(Eid("output"), f"<div class='passage' id={passage_id}>")
         for out in passage.contents:
             eid_target = (
                 context.lid_to_eid[out.target]
                 if out.target is not None
-                else Eid("output")
+                else Eid(passage_id)
             )
             match out:
                 case TimeStamp(date=date):
@@ -164,7 +168,7 @@ class Game(AbstractGame[T]):
                         f"<{markup} {rcss} id='{element_id}'>{html}</{markup}>",
                     )
                 case ContinuationElement(continuation=continuation):
-                    continuation.setup(self, eid_target)
+                    continuation.setup(self, eid_target, disabled)
                 case Image(src=src):
                     img_id = get_unique_element_id("image")
                     be.insert_end(eid_target, f"<img id='{img_id}' src='{src}' />")
@@ -174,8 +178,9 @@ class Game(AbstractGame[T]):
 
     def _render(self) -> None:
         be.clear(Eid("output"))
-        for passage in self._output:
-            self._render_passage(passage)
+        for passage in self._output[:-1]:
+            self._render_passage(passage, disabled=True)
+        self._render_passage(self._output[-1])
         be.scroll_to_bottom(Eid("output-container"))
 
     @classmethod
@@ -230,6 +235,11 @@ class Game(AbstractGame[T]):
         *,
         kwargs: dict[str, object] | None = None,
     ) -> None:
+        # disable previous passage
+        if self._last_passage is not None:
+            be.remove(self._last_passage)
+            self._render_passage(self._output[-1], disabled=True)
+
         # new empty passage
         self._current_passage = PassageContext()
 

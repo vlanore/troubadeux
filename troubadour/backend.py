@@ -43,6 +43,10 @@ def get_html(id: Eid) -> str:
     return Element(id).element.innerHTML
 
 
+def remove(id: Eid) -> None:
+    Element(id).element.remove()
+
+
 def clear(id: Eid) -> None:
     set_html(id, "")
 
@@ -73,6 +77,14 @@ def remove_class(id: Eid, cls: str) -> None:
 
 def set_display(id: Eid, display: str) -> None:
     Element(id).element.style.display = display
+
+
+def disable(id: Eid) -> None:
+    Element(id).element.disabled = "disabled"
+
+
+def enable(id: Eid) -> None:
+    Element(id).element.disabled = None
 
 
 def scroll_to_bottom(id: Eid) -> None:
