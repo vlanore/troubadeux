@@ -7,33 +7,11 @@ from typing import Callable, TypeVar
 import jsonpickle as jsp
 
 import troubadour.backend as be
-import troubadour.continuations as tc
 import troubadour.save as sv
 from troubadour.definitions import AbstractGame, Continuation, Output, Target, Eid, Lid
 from troubadour.unique_id import get_unique_element_id
 
 T = TypeVar("T")
-
-
-class ResetDialog:
-    @classmethod
-    def perform_reset(cls, _game: "Game") -> None:
-        sv.erase_save()
-        be.refresh_page()
-
-    @classmethod
-    def dialog(cls, _game: "Game") -> None:
-        be.insert_end(
-            Eid("output"),
-            (
-                "<h1>Game reset</h1>"
-                "<p>Are you sure you want to reset?</p>"
-                "<p>This will <b>erase all game data</b>."
-            ),
-        )
-
-        tc.Button("Reset", cls.perform_reset, dialog=True).setup(_game)
-        tc.Button("Cancel", Game.cancel_dialog, dialog=True).setup(_game)
 
 
 @dataclass
@@ -189,8 +167,17 @@ class Game(AbstractGame[T]):
         be.on_file_upload(Eid("import"), load_from_file, Game)
 
         # reset button
+        def perform_reset(_) -> None:
+            sv.erase_save()
+            be.refresh_page()
+
         def reset_callback(_) -> None:
-            game.run_passage(ResetDialog.dialog, dialog=True)
+            be.set_display(Eid("modal-bg"), "flex")
+            be.onclick(Eid("reset-button"), perform_reset)
+            be.onclick(
+                Eid("reset-cancel-button"),
+                lambda _: be.set_display(Eid("modal-bg"), "none"),
+            )
 
         be.onclick(Eid("reset"), reset_callback)
 
