@@ -7,7 +7,7 @@ import jsonpickle as jsp
 import pyscript
 from pyodide.code import run_js  # type: ignore
 from pyodide.ffi import create_proxy  # type: ignore
-from pyscript import Element  # type: ignore
+from pyscript import Element  # pylint: disable=E0611 # type: ignore
 
 from troubadour.definitions import Eid
 
@@ -17,71 +17,83 @@ def pyscript_version() -> str:
     return pyscript.__version__
 
 
-def onclick(id: Eid, func: Callable[[Any], None]) -> None:
+def onclick(eid: Eid, func: Callable[[Any], None]) -> None:
     """Add on click callback to element.
 
     Args:
         id (str): html id of element.
         func (Callable[[Any], None]): callback.
     """
-    Element(id).element.addEventListener("click", create_proxy(func))
+    Element(eid).element.addEventListener("click", create_proxy(func))
 
 
-def onload(id: Eid, func: Callable[[Any], None]) -> None:
-    Element(id).element.addEventListener("load", create_proxy(func))
+def onload(eid: Eid, func: Callable[[Any], None]) -> None:
+    Element(eid).element.addEventListener("load", create_proxy(func))
 
 
-def insert_end(id: Eid, html: str) -> None:
-    Element(id).element.insertAdjacentHTML("beforeend", html)
+def insert_end(eid: Eid, html: str) -> None:
+    Element(eid).element.insertAdjacentHTML("beforeend", html)
 
 
-def set_html(id: Eid, html: str) -> None:
-    Element(id).element.innerHTML = html
+def set_html(eid: Eid, html: str) -> None:
+    Element(eid).element.innerHTML = html
 
 
-def get_html(id: Eid) -> str:
-    return Element(id).element.innerHTML
+def get_html(eid: Eid) -> str:
+    return Element(eid).element.innerHTML
 
 
-def clear(id: Eid) -> None:
-    set_html(id, "")
+def remove(eid: Eid) -> None:
+    Element(eid).element.remove()
 
 
-def click(id: Eid) -> None:
-    Element(id).element.click()
+def clear(eid: Eid) -> None:
+    set_html(eid, "")
 
 
-def set_src(id: Eid, value: str) -> None:
-    Element(id).element.src = value
+def click(eid: Eid) -> None:
+    Element(eid).element.click()
 
 
-def set_alt(id: Eid, value: str) -> None:
-    Element(id).element.alt = value
+def set_src(eid: Eid, value: str) -> None:
+    Element(eid).element.src = value
 
 
-def get_value(id: Eid) -> str:
-    return Element(id).element.value
+def set_alt(eid: Eid, value: str) -> None:
+    Element(eid).element.alt = value
 
 
-def add_class(id: Eid, cls: str) -> None:
-    Element(id).add_class(cls)
+def get_value(eid: Eid) -> str:
+    return Element(eid).element.value
 
 
-def remove_class(id: Eid, cls: str) -> None:
-    Element(id).remove_class(cls)
+def add_class(eid: Eid, cls: str) -> None:
+    Element(eid).add_class(cls)
 
 
-def set_display(id: Eid, display: str) -> None:
-    Element(id).element.style.display = display
+def remove_class(eid: Eid, cls: str) -> None:
+    Element(eid).remove_class(cls)
 
 
-def scroll_to_bottom(id: Eid) -> None:
-    tgt = Element(id).element
+def set_display(eid: Eid, display: str) -> None:
+    Element(eid).element.style.display = display
+
+
+def disable(eid: Eid) -> None:
+    Element(eid).element.disabled = "disabled"
+
+
+def enable(eid: Eid) -> None:
+    Element(eid).element.disabled = None
+
+
+def scroll_to_bottom(eid: Eid) -> None:
+    tgt = Element(eid).element
     tgt.scrollTop = tgt.scrollHeight
 
 
-def scroll_into_view(id: Eid) -> None:
-    tgt = Element(id).element
+def scroll_into_view(eid: Eid) -> None:
+    tgt = Element(eid).element
     tgt.scrollIntoView(behavior="smooth")
 
 
@@ -141,12 +153,12 @@ local_storage = LocalStorage()
 "Global local storage object."
 
 
-def file_download_button(id: str, content: str, filename: str) -> None:
+def file_download_button(eid: Eid, content: str, filename: str) -> None:
     run_js(
         f"""
 const blob = new Blob(
     [`{content.encode("unicode_escape").decode("utf-8")}`], {{type: 'text/json'}});
-const button = document.getElementById("{id}");
+const button = document.getElementById("{eid}");
 button.href = URL.createObjectURL(blob);
 button.download = "{filename}";
         """
@@ -155,20 +167,20 @@ button.download = "{filename}";
 
 
 def on_file_upload(
-    id: Eid,
+    eid: Eid,
     callback: Callable[[str], None] | Callable[[T], None],
     cls: Optional[Type[T]] = None,
 ) -> None:
-    async def event_handler(event: Any, cb: Callable = callback) -> None:
+    async def event_handler(event: Any, callback: Callable = callback) -> None:
         file_list = event.target.files.to_py()
-        for f in file_list:
-            raw = await f.text()
+        for file in file_list:
+            raw = await file.text()
             if cls is None:
-                cb(raw)
+                callback(raw)
             else:
                 decoded = jsp.decode(raw)
                 assert isinstance(decoded, cls)
-                cb(decoded)
-        Element(id).element.value = ""
+                callback(decoded)
+        Element(eid).element.value = ""
 
-    Element(id).element.addEventListener("change", create_proxy(event_handler))
+    Element(eid).element.addEventListener("change", create_proxy(event_handler))

@@ -30,8 +30,14 @@ def server(port: int):
     default="index.py",
     help="Location of the main file of the project, relative to the source directory.",
 )
+@click.option(
+    "-c",
+    "--css",
+    default=None,
+    help="Location of a custom CSS file for the project.",
+)
 @click.argument("src")
-def build(path: str, entry_point: str, src: str) -> None:
+def build(path: str, entry_point: str, css: str | None, src: str) -> None:
     """Generates the files for your troubadour project. Needs SRC, the path to the
     directory containing the project source files."""
 
@@ -48,6 +54,11 @@ def build(path: str, entry_point: str, src: str) -> None:
     main_html_path = output_path / "index.html"
     toml_path = output_path / "config.toml"
     css_path = output_path / "troubadour.css"
+    if css is not None:
+        custom_css_path = src_dir / css
+        assert custom_css_path.exists(), "Custom CSS does not exist!"
+        print(f"Using custom CSS file: {custom_css_path}")
+        sources.append(custom_css_path)
 
     # Copy troubadour lib to dest folder
     troubadour_dest_dir = output_path / "troubadour"
@@ -81,7 +92,16 @@ def build(path: str, entry_point: str, src: str) -> None:
     print("Generating project files from jinja template")
     environment = Environment(loader=PackageLoader("troubadour"))
     main_template = environment.get_template("main.html.j2")
-    main_source = main_template.render(entrypoint=f"{user_module.name}/{entry_point}")
+    custom_stylesheet = (
+        f'<link rel="stylesheet" href="{src_dir.name}/{css}">'
+        if css is not None
+        else ""
+    )
+
+    main_source = main_template.render(
+        entrypoint=f"{user_module.name}/{entry_point}",
+        custom_stylesheet=custom_stylesheet,
+    )
 
     css_template = environment.get_template("troubadour.css.j2")
     css_source = css_template.render()

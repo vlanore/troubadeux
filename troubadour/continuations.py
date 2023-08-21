@@ -12,9 +12,11 @@ class InterfaceSequence(Continuation):
     def __init__(self, *continuations: Continuation):
         self.lst = [*continuations]
 
-    def setup(self, game: AbstractGame, target: Eid = Eid("output")) -> None:
+    def setup(
+        self, game: AbstractGame, target: Eid = Eid("output"), disabled: bool = False
+    ) -> None:
         for cont in self.lst:
-            cont.setup(game, target)
+            cont.setup(game, target, disabled)
 
 
 @dataclass
@@ -24,15 +26,20 @@ class Button(Continuation):
     kwargs: dict[str, object] = field(default_factory=dict)
     dialog: bool = False
 
-    def setup(self, game: AbstractGame, target: Eid = Eid("output")) -> None:
+    def setup(
+        self, game: AbstractGame, target: Eid = Eid("output"), disabled: bool = False
+    ) -> None:
         button_id = get_unique_element_id("button")
         be.insert_end(
             target, f"<button type='button' id='{button_id}'>{self.txt}</button>"
         )
-        be.onclick(
-            button_id,
-            lambda _: game.run_passage(self.passage, kwargs=self.kwargs),
-        )
+        if not disabled:
+            be.onclick(
+                button_id,
+                lambda _: game.run_passage(self.passage, kwargs=self.kwargs),
+            )
+        else:
+            be.disable(button_id)
 
 
 @dataclass
@@ -43,7 +50,9 @@ class TextButton(Continuation):
     kwargs: dict[str, object] = field(default_factory=dict)
     convertor: Callable[[Any], str] = str
 
-    def setup(self, game: AbstractGame, target: Eid = Eid("output")) -> None:
+    def setup(
+        self, game: AbstractGame, target: Eid = Eid("output"), disabled: bool = False
+    ) -> None:
         text_id = get_unique_element_id("textinput")
         button_id = get_unique_element_id("button")
         be.insert_end(target, f"<input type='text' id='{text_id}'></input>")
@@ -54,10 +63,14 @@ class TextButton(Continuation):
                 f"id='{button_id}'>{self.txt}</button>"
             ),
         )
+        if not disabled:
 
-        def callback(_):
-            value = self.convertor(be.get_value(text_id))
-            full_kwargs = {self.value_kw: value, **self.kwargs}
-            game.run_passage(self.passage, kwargs=full_kwargs)
+            def callback(_):
+                value = self.convertor(be.get_value(text_id))
+                full_kwargs = {self.value_kw: value, **self.kwargs}
+                game.run_passage(self.passage, kwargs=full_kwargs)
 
-        be.onclick(button_id, callback)
+            be.onclick(button_id, callback)
+        else:
+            be.disable(button_id)
+            be.disable(text_id)
