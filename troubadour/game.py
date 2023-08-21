@@ -20,6 +20,12 @@ class Element(Output):
     def paragraph(self, html: str = "", css: dict[str, str] | None = None) -> "Element":
         return self.game.paragraph(html, css=css, target=self.local_id)
 
+    def raw_html(self, html: str = "") -> None:
+        return self.game.raw_html(html, target=self.local_id)
+
+    def img(self, src: str = "") -> None:
+        return self.game.img(src, target=self.local_id)
+
     def continuation(self, continuation: Continuation) -> None:
         self.game.continuation(continuation, target=self.local_id)
 
@@ -33,6 +39,12 @@ class TimeStamp:
 @dataclass
 class RawHTML:
     html: str
+    target: Target
+
+
+@dataclass
+class Image:
+    src: str
     target: Target
 
 
@@ -51,7 +63,7 @@ class ContinuationElement:
     target: Target
 
 
-PassageElement = RawHTML | TimeStamp | Container | ContinuationElement
+PassageElement = RawHTML | TimeStamp | Container | ContinuationElement | Image
 
 
 @dataclass
@@ -89,6 +101,12 @@ class Game(AbstractGame[T]):
             Container("p", html, (css if css is not None else {}), target, local_id)
         )
         return Element(local_id, self)
+
+    def raw_html(self, html: str = "", target: Target = None) -> None:
+        self._current_passage.output.contents.append(RawHTML(html, target))
+
+    def img(self, src: str = "", target: Target = None) -> None:
+        self._current_passage.output.contents.append(Image(src, target))
 
     def continuation(self, continuation: Continuation, target: Target = None) -> None:
         self._current_passage.output.contents.append(
@@ -130,6 +148,12 @@ class Game(AbstractGame[T]):
                     )
                 case ContinuationElement(continuation=continuation):
                     continuation.setup(self, eid_target)
+                case Image(src=src):
+                    img_id = get_unique_element_id("image")
+                    be.insert_end(eid_target, f"<img id='{img_id}' src='{src}' />")
+                    be.onload(
+                        img_id, lambda _: be.scroll_to_bottom(Eid("output-container"))
+                    )
 
     def _render(self) -> None:
         be.clear(Eid("output"))
