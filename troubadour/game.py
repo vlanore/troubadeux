@@ -207,39 +207,15 @@ class Game(AbstractGame[T]):
                         "(this will remove all progress).</p>"
                     ),
                 )
-                cls._setup_reset_button()  # pylint: disable=W0212
+                sv.setup_reset_button()
                 be.remove(Eid("import-label"))
                 be.remove(Eid("export"))
                 return
 
-        # export button
+        # setting up buttons
         sv.setup_export_button(game)
-
-        # import button
-        def load_from_file(extracted_game: Game):
-            sv.save_game(extracted_game)
-            be.refresh_page()
-
-        be.on_file_upload(Eid("import"), load_from_file, Game)
-
-        # reset button
-        cls._setup_reset_button()  # pylint: disable=W0212
-
-    @classmethod
-    def _setup_reset_button(cls) -> None:
-        def perform_reset(_) -> None:
-            sv.erase_save()
-            be.refresh_page()
-
-        def reset_callback(_) -> None:
-            be.set_display(Eid("modal-bg"), "flex")
-            be.onclick(Eid("reset-button"), perform_reset)
-            be.onclick(
-                Eid("reset-cancel-button"),
-                lambda _: be.set_display(Eid("modal-bg"), "none"),
-            )
-
-        be.onclick(Eid("reset"), reset_callback)
+        sv.setup_import_button(Game)
+        sv.setup_reset_button()
 
     def _trim_output(self) -> None:
         if len(self._output) > self.max_output_len:
