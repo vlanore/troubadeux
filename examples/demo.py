@@ -40,16 +40,6 @@ def my_passage(game: Game[MyState]) -> None:
         " diam pellentesque odio, eu ornare neque felis ac mi."
     )
     game.paragraph(
-        "Praesent leo diam, scelerisque dapibus commodo ut, facilisis sit amet "
-        "felis. Donec libero lacus, interdum a tortor sed, vestibulum suipit nunc."
-        " Aenean in imperdiet tortor. Curabitur ultricies, elit ut ullamcorper"
-        " aliquam, arcu orci rutrum velit, in placerat purus augue sed sem."
-        " Donec varius velit ac felis auctor, eu efficitur purus rutrum."
-        " Fusce id pharetra lacus. Nullam quis dignissim sapien, pulvinar"
-        " congue sem. Proin consectetur, lacus quis aliquet porta, tellus"
-        " diam pellentesque odio, eu ornare neque felis ac mi."
-    )
-    game.paragraph(
         "Donec varius velit ac felis auctor, eu efficitur purus rutrum."
         " Fusce id pharetra lacus. Nullam quis dignissim sapien, pulvinar"
         " congue sem. Proin consectetur, lacus quis aliquet porta, tellus"
@@ -77,6 +67,9 @@ def my_other_passage(game: Game[MyState], msg: str) -> None:
 
 
 def display_stuff(game: Game[MyState], msg: str) -> None:
+    cols = game.columns(3, ["", "Hello", ""])
+    for col in cols:
+        col.paragraph("Hi")
     game.raw_html("<img src='https://picsum.photos/600/80'/>")
     game.paragraph(
         "Nullam quis dignissim sapien, pulvinar congue sem. Proin consectetur,"

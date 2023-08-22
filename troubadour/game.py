@@ -37,6 +37,9 @@ class Element(Output):
     def continuation(self, continuation: Continuation) -> None:
         self.game.continuation(continuation, target=self.local_id)
 
+    def columns(self, nb_col: int, html: None | list[str]) -> list[Output]:
+        return self.game.columns(nb_col, html, target=self.local_id)
+
 
 @dataclass
 class TimeStamp:
@@ -119,6 +122,20 @@ class Game(AbstractGame[T]):
             Container(markup, html, (css if css is not None else {}), target, local_id)
         )
         return Element(local_id, self)
+
+    def columns(
+        self, nb_col: int, html: None | list[str], target: Target = None
+    ) -> list[Output]:
+        container = self.container("div", css={"class": '"columns"'}, target=target)
+        assert html is None or len(html) == nb_col
+        return [
+            container.container(
+                "div",
+                html=html[col_id] if html is not None else "",
+                css={"class": '"column"'},
+            )
+            for col_id in range(nb_col)
+        ]
 
     def raw_html(self, html: str = "", target: Target = None) -> None:
         self._current_passage.output.contents.append(RawHTML(html, target))
