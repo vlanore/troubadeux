@@ -37,6 +37,9 @@ class Element(Output):
     def continuation(self, continuation: Continuation) -> None:
         self.game.continuation(continuation, target=self.local_id)
 
+    def columns(self, nb_col: int, html: None | list[str]) -> list[Output]:
+        return self.game.columns(nb_col, html, target=self.local_id)
+
 
 @dataclass
 class TimeStamp:
@@ -120,6 +123,20 @@ class Game(AbstractGame[T]):
         )
         return Element(local_id, self)
 
+    def columns(
+        self, nb_col: int, html: None | list[str], target: Target = None
+    ) -> list[Output]:
+        container = self.container("div", css={"class": '"columns"'}, target=target)
+        assert html is None or len(html) == nb_col
+        return [
+            container.container(
+                "div",
+                html=html[col_id] if html is not None else "",
+                css={"class": '"column"'},
+            )
+            for col_id in range(nb_col)
+        ]
+
     def raw_html(self, html: str = "", target: Target = None) -> None:
         self._current_passage.output.contents.append(RawHTML(html, target))
 
@@ -195,33 +212,27 @@ class Game(AbstractGame[T]):
             game = Game(StateCls())
             game.run_passage(start_passage)
         else:
-            game = sv.load_game(Game)
-            game._render()  # pylint: disable=W0212
+            try:
+                game = sv.load_game(Game)
+                game._render()  # pylint: disable=W0212
+            except Exception:  # pylint: disable=W0718
+                be.insert_end(
+                    Eid("output"),
+                    (
+                        "<h1> Something went wrong during loading</h1>"
+                        "<p>You can try resetting the game "
+                        "(this will remove all progress).</p>"
+                    ),
+                )
+                sv.setup_reset_button()
+                be.remove(Eid("import-label"))
+                be.remove(Eid("export"))
+                return
 
-        # export button
+        # setting up buttons
         sv.setup_export_button(game)
-
-        # import button
-        def load_from_file(extracted_game: Game):
-            sv.save_game(extracted_game)
-            be.refresh_page()
-
-        be.on_file_upload(Eid("import"), load_from_file, Game)
-
-        # reset button
-        def perform_reset(_) -> None:
-            sv.erase_save()
-            be.refresh_page()
-
-        def reset_callback(_) -> None:
-            be.set_display(Eid("modal-bg"), "flex")
-            be.onclick(Eid("reset-button"), perform_reset)
-            be.onclick(
-                Eid("reset-cancel-button"),
-                lambda _: be.set_display(Eid("modal-bg"), "none"),
-            )
-
-        be.onclick(Eid("reset"), reset_callback)
+        sv.setup_import_button(Game)
+        sv.setup_reset_button()
 
     def _trim_output(self) -> None:
         if len(self._output) > self.max_output_len:

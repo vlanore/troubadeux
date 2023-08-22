@@ -17,4 +17,4 @@ try:
 except ImportError:  # if we're not in the browser
     __all__ = []
 
-VERSION = "0.1.2"
+VERSION = "0.1.3"

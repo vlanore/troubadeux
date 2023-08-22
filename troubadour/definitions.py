@@ -1,6 +1,6 @@
 "Global protocol and interface definitions."
 
-from typing import Generic, NewType, Protocol, TypeVar, Callable
+from typing import Callable, Generic, NewType, Protocol, TypeVar, runtime_checkable
 
 Eid = NewType("Eid", str)
 "Id of an element on the page (typically, a HTML tag)."
@@ -41,10 +41,14 @@ class Output(Protocol):
     def continuation(self, continuation: Continuation) -> None:
         ...
 
+    def columns(self, nb_col: int, html: None | list[str]) -> list["Output"]:
+        ...
+
 
 T = TypeVar("T")
 
 
+@runtime_checkable
 class AbstractGame(Output, Protocol, Generic[T]):
     state: T
 

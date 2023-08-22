@@ -5,7 +5,7 @@ from typing import TypeVar
 import jsonpickle as jsp
 
 import troubadour.backend as be
-from troubadour.definitions import AbstractGame
+from troubadour.definitions import AbstractGame, Eid
 
 
 def save_game(game: AbstractGame) -> None:
@@ -19,10 +19,34 @@ def save_game(game: AbstractGame) -> None:
 def setup_export_button(game: AbstractGame) -> None:
     json_source = jsp.encode(game)
     assert json_source is not None
-    be.file_download_button("export", json_source, "troubadour.json")
+    be.file_download_button(Eid("export"), json_source, "troubadour.json")
 
 
-T = TypeVar("T")
+T = TypeVar("T", bound=AbstractGame)
+
+
+def setup_import_button(game_type: type[T]) -> None:
+    def load_from_file(extracted_game: T):
+        save_game(extracted_game)
+        be.refresh_page()
+
+    be.on_file_upload(Eid("import"), load_from_file, game_type)
+
+
+def setup_reset_button() -> None:
+    def perform_reset(_) -> None:
+        erase_save()
+        be.refresh_page()
+
+    def reset_callback(_) -> None:
+        be.set_display(Eid("modal-bg"), "flex")
+        be.onclick(Eid("reset-button"), perform_reset)
+        be.onclick(
+            Eid("reset-cancel-button"),
+            lambda _: be.set_display(Eid("modal-bg"), "none"),
+        )
+
+    be.onclick(Eid("reset"), reset_callback)
 
 
 def load_game(game_type: type[T]) -> T:
