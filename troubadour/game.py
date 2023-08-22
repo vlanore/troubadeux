@@ -195,8 +195,22 @@ class Game(AbstractGame[T]):
             game = Game(StateCls())
             game.run_passage(start_passage)
         else:
-            game = sv.load_game(Game)
-            game._render()  # pylint: disable=W0212
+            try:
+                game = sv.load_game(Game)
+                game._render()  # pylint: disable=W0212
+            except Exception:  # pylint: disable=W0718
+                be.insert_end(
+                    Eid("output"),
+                    (
+                        "<h1> Something went wrong during loading</h1>"
+                        "<p>You can try resetting the game "
+                        "(this will remove all progress).</p>"
+                    ),
+                )
+                cls._setup_reset_button()  # pylint: disable=W0212
+                be.remove(Eid("import-label"))
+                be.remove(Eid("export"))
+                return
 
         # export button
         sv.setup_export_button(game)
@@ -209,6 +223,10 @@ class Game(AbstractGame[T]):
         be.on_file_upload(Eid("import"), load_from_file, Game)
 
         # reset button
+        cls._setup_reset_button()  # pylint: disable=W0212
+
+    @classmethod
+    def _setup_reset_button(cls) -> None:
         def perform_reset(_) -> None:
             sv.erase_save()
             be.refresh_page()

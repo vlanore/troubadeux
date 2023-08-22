@@ -5,7 +5,7 @@ from typing import TypeVar
 import jsonpickle as jsp
 
 import troubadour.backend as be
-from troubadour.definitions import AbstractGame
+from troubadour.definitions import AbstractGame, Eid
 
 
 def save_game(game: AbstractGame) -> None:
@@ -19,7 +19,7 @@ def save_game(game: AbstractGame) -> None:
 def setup_export_button(game: AbstractGame) -> None:
     json_source = jsp.encode(game)
     assert json_source is not None
-    be.file_download_button("export", json_source, "troubadour.json")
+    be.file_download_button(Eid("export"), json_source, "troubadour.json")
 
 
 T = TypeVar("T")
