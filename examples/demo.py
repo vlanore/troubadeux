@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from troubadour import Button, TextButton, Game
+from troubadour import Button, TextButton, run_game
 from troubadour.definitions import AbstractGame
 
 
@@ -80,4 +80,4 @@ def display_stuff(game: AbstractGame[MyState], msg: str) -> None:
     game.continuations(Button("Click", my_other_passage, dict(msg="hello world")))
 
 
-Game.run(MyState, intro)
+run_game(MyState, intro)

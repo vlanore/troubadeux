@@ -12,4 +12,4 @@ def intro(game: tg.Game[MyState]) -> None:
     game.print("Hello world")
 
 
-tg.Game.run(MyState, intro)
+tg.run_game(MyState, intro)

@@ -207,36 +207,6 @@ class Game(AbstractGame[T]):
         self._render_passage(self._output[-1])
         be.scroll_to_bottom(Eid("output-container"))
 
-    @classmethod
-    def run(
-        cls, StateCls: type, start_passage: Callable  # pylint: disable=C0103
-    ) -> None:
-        if not sv.state_exists():
-            game = Game(StateCls())
-            game.run_passage(start_passage)
-        else:
-            try:
-                game = sv.load_game(Game)
-                game._render()  # pylint: disable=W0212
-            except Exception:  # pylint: disable=W0718
-                be.insert_end(
-                    Eid("output"),
-                    (
-                        "<h1> Something went wrong during loading</h1>"
-                        "<p>You can try resetting the game "
-                        "(this will remove all progress).</p>"
-                    ),
-                )
-                sv.setup_reset_button()
-                be.remove(Eid("import-label"))
-                be.remove(Eid("export"))
-                return
-
-        # setting up buttons
-        sv.setup_export_button(game)
-        sv.setup_import_button(Game)
-        sv.setup_reset_button()
-
     def _trim_output(self) -> None:
         if len(self._output) > self.max_output_len:
             trim_index = -self.max_output_len
@@ -271,3 +241,31 @@ class Game(AbstractGame[T]):
         self._current_passage = PassageContext()
         self._trim_output()
         sv.save_game(self)
+
+
+def run_game(StateCls: type, start_passage: Callable) -> None:  # pylint: disable=C0103
+    if not sv.state_exists():
+        game = Game(StateCls())
+        game.run_passage(start_passage)
+    else:
+        try:
+            game = sv.load_game(Game)
+            game._render()  # pylint: disable=W0212
+        except Exception:  # pylint: disable=W0718
+            be.insert_end(
+                Eid("output"),
+                (
+                    "<h1> Something went wrong during loading</h1>"
+                    "<p>You can try resetting the game "
+                    "(this will remove all progress).</p>"
+                ),
+            )
+            sv.setup_reset_button()
+            be.remove(Eid("import-label"))
+            be.remove(Eid("export"))
+            return
+
+    # setting up buttons
+    sv.setup_export_button(game)
+    sv.setup_import_button(Game)
+    sv.setup_reset_button()
