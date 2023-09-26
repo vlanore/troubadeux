@@ -109,9 +109,6 @@ class GameImpl(Game[T]):
     _current_passage: PassageContext = field(default_factory=PassageContext)
     _last_passage: Eid | None = None
 
-    def print(self, html: str, target: Target = None) -> None:
-        self._current_passage.output.contents.append(RawHTML(html, target))
-
     def paragraph(
         self, html: str = "", css: dict[str, str] | None = None, target: Target = None
     ) -> Element:
