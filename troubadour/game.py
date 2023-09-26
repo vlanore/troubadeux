@@ -241,14 +241,25 @@ class GameImpl(Game[T]):
 
 
 def run_game(StateCls: type, start_passage: Callable) -> None:  # pylint: disable=C0103
-    if not sv.state_exists():
+    """Depending on the presence of a game state in local storage, either load from
+    storage or start a new game at passage `start_passage` with starting state
+    `StateCls`.
+
+    Args:
+        `StateCls` (`type`): state class to instantiate (should support 0 params) to
+            start a new game.
+        `start_passage` (`Callable`): passage to run at the start of the new game.
+    """
+    if not sv.state_exists():  # if there is no state in storage, start new game
         game = GameImpl(StateCls())
         game.run_passage(start_passage)
-    else:
+    else:  # otherwise try to start from stored state
         try:
             game = sv.load_game(GameImpl)
             game._render()  # pylint: disable=W0212
         except Exception:  # pylint: disable=W0718
+            # if something went wrong during loading, display a massage and offer
+            # the option to restart
             be.insert_end(
                 Eid("output"),
                 (
@@ -260,7 +271,7 @@ def run_game(StateCls: type, start_passage: Callable) -> None:  # pylint: disabl
             sv.setup_reset_button()
             be.remove(Eid("import-label"))
             be.remove(Eid("export"))
-            return
+            return  # return to avoid setting up import/export buttons
 
     # setting up buttons
     sv.setup_export_button(game)
