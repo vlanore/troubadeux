@@ -6,8 +6,8 @@ from typing import Callable, TypeVar
 
 import troubadour.backend as be
 import troubadour.save as sv
-from troubadour.definitions import Game, Continuation, Output, Target, Eid, Lid
-from troubadour.unique_id import get_unique_element_id
+from troubadour.definitions import Continuation, Eid, Game, Lid, Output, Target
+from troubadour.unique_id import IdProvider, get_unique_element_id
 
 T = TypeVar("T")
 
@@ -90,11 +90,10 @@ class PassageContext:
     output: PassageOutput = field(default_factory=PassageOutput)
     next_lid: int = 0
     lid_to_eid: dict[Lid, Eid] = field(default_factory=dict)
+    _id_provider: IdProvider = field(default_factory=IdProvider)
 
     def new_lid(self) -> Lid:
-        result = self.next_lid
-        self.next_lid += 1
-        return Lid(result)
+        return Lid(self._id_provider.get())
 
 
 @dataclass
