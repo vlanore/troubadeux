@@ -37,6 +37,9 @@ class Element(Output):
     def continuation(self, continuation: Continuation) -> None:
         self.game.continuation(continuation, target=self.local_id)
 
+    def continuations(self, *continuations: Continuation) -> None:
+        self.game.continuations(*continuations, target=self.local_id)
+
     def columns(self, nb_col: int, html: None | list[str]) -> list[Output]:
         return self.game.columns(nb_col, html, target=self.local_id)
 
@@ -96,6 +99,10 @@ class PassageContext:
 
 @dataclass
 class Game(AbstractGame[T]):
+    """The core troubadour class: encapsulates game and output state and provides
+    methods to output text. All passages should take a Game as first parameter and
+    the class method `run` should be called to run the game."""
+
     state: T
     max_output_len: int = 15
     _output: list[PassageOutput] = field(default_factory=list)
@@ -199,10 +206,6 @@ class Game(AbstractGame[T]):
             self._render_passage(passage, disabled=True)
         self._render_passage(self._output[-1])
         be.scroll_to_bottom(Eid("output-container"))
-
-    @classmethod
-    def cancel_dialog(cls, game: "Game") -> None:
-        game._render()  # pylint: disable=W0212
 
     @classmethod
     def run(

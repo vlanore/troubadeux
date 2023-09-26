@@ -41,6 +41,9 @@ class Output(Protocol):
     def continuation(self, continuation: Continuation) -> None:
         ...
 
+    def continuations(self, *continuations: Continuation) -> None:
+        ...
+
     def columns(self, nb_col: int, html: None | list[str]) -> list["Output"]:
         ...
 
