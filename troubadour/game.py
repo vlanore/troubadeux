@@ -6,7 +6,7 @@ from typing import Callable, TypeVar
 
 import troubadour.backend as be
 import troubadour.save as sv
-from troubadour.definitions import AbstractGame, Continuation, Output, Target, Eid, Lid
+from troubadour.definitions import Game, Continuation, Output, Target, Eid, Lid
 from troubadour.unique_id import get_unique_element_id
 
 T = TypeVar("T")
@@ -15,7 +15,7 @@ T = TypeVar("T")
 @dataclass
 class Element(Output):
     local_id: Lid
-    game: "Game"
+    game: "GameImpl"
 
     def paragraph(self, html: str = "", css: dict[str, str] | None = None) -> "Element":
         return self.game.paragraph(html, css=css, target=self.local_id)
@@ -98,7 +98,7 @@ class PassageContext:
 
 
 @dataclass
-class Game(AbstractGame[T]):
+class GameImpl(Game[T]):
     """The core troubadour class: encapsulates game and output state and provides
     methods to output text. All passages should take a Game as first parameter and
     the class method `run` should be called to run the game."""
@@ -245,11 +245,11 @@ class Game(AbstractGame[T]):
 
 def run_game(StateCls: type, start_passage: Callable) -> None:  # pylint: disable=C0103
     if not sv.state_exists():
-        game = Game(StateCls())
+        game = GameImpl(StateCls())
         game.run_passage(start_passage)
     else:
         try:
-            game = sv.load_game(Game)
+            game = sv.load_game(GameImpl)
             game._render()  # pylint: disable=W0212
         except Exception:  # pylint: disable=W0718
             be.insert_end(
@@ -267,5 +267,5 @@ def run_game(StateCls: type, start_passage: Callable) -> None:  # pylint: disabl
 
     # setting up buttons
     sv.setup_export_button(game)
-    sv.setup_import_button(Game)
+    sv.setup_import_button(GameImpl)
     sv.setup_reset_button()

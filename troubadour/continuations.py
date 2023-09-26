@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 import troubadour.backend as be
-from troubadour.definitions import AbstractGame, Continuation, Eid
+from troubadour.definitions import Game, Continuation, Eid
 from troubadour.unique_id import get_unique_element_id
 
 
@@ -13,7 +13,7 @@ class InterfaceSequence(Continuation):
         self.lst = [*continuations]
 
     def setup(
-        self, game: AbstractGame, target: Eid = Eid("output"), disabled: bool = False
+        self, game: Game, target: Eid = Eid("output"), disabled: bool = False
     ) -> None:
         for cont in self.lst:
             cont.setup(game, target, disabled)
@@ -27,7 +27,7 @@ class Button(Continuation):
     dialog: bool = False
 
     def setup(
-        self, game: AbstractGame, target: Eid = Eid("output"), disabled: bool = False
+        self, game: Game, target: Eid = Eid("output"), disabled: bool = False
     ) -> None:
         button_id = get_unique_element_id("button")
         be.insert_end(
@@ -51,7 +51,7 @@ class TextButton(Continuation):
     convertor: Callable[[Any], str] = str
 
     def setup(
-        self, game: AbstractGame, target: Eid = Eid("output"), disabled: bool = False
+        self, game: Game, target: Eid = Eid("output"), disabled: bool = False
     ) -> None:
         text_id = get_unique_element_id("textinput")
         button_id = get_unique_element_id("button")

@@ -16,7 +16,7 @@ class Continuation(Protocol):
 
     def setup(
         self,
-        game: "AbstractGame",
+        game: "Game",
         target: "Eid" = Eid("output"),
         disabled: bool = False,
     ) -> None:
@@ -52,7 +52,7 @@ T = TypeVar("T")
 
 
 @runtime_checkable
-class AbstractGame(Output, Protocol, Generic[T]):
+class Game(Output, Protocol, Generic[T]):
     state: T
 
     def run_passage(

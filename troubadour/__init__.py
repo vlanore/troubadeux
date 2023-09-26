@@ -1,12 +1,13 @@
 "Troubadour is a small browser-based text-based game framework."
 
 try:
-    from troubadour.game import Game, run_game  # noqa: F401
     from troubadour.continuations import (  # noqa: F401
         Button,
-        TextButton,
         InterfaceSequence,
+        TextButton,
     )
+    from troubadour.definitions import Game  # noqa: F401
+    from troubadour.game import run_game  # noqa: F401
 
     __all__ = [
         "Game",

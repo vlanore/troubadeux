@@ -2,8 +2,7 @@
 
 from dataclasses import dataclass
 
-from troubadour import Button, TextButton, run_game
-from troubadour.definitions import AbstractGame
+from troubadour import Button, Game, TextButton, run_game
 
 
 @dataclass
@@ -11,14 +10,14 @@ class MyState:
     hello: int = 0
 
 
-def intro(game: AbstractGame[MyState]) -> None:
+def intro(game: Game[MyState]) -> None:
     x = game.state.hello
     game.paragraph("<h1>Hello</h1>World lorem ipsum stuff<p/>\n")
     game.paragraph(f"Hello worlds: <b id='youpi'>{x}</b>\n")
     game.continuations(Button("Click", my_other_passage, dict(msg="Youpi")))
 
 
-def my_passage(game: AbstractGame[MyState]) -> None:
+def my_passage(game: Game[MyState]) -> None:
     game.state.hello += 1
     game.paragraph(
         "Praesent leo diam, scelerisque dapibus commodo ut, facilisis sit amet "
@@ -52,7 +51,7 @@ def my_passage(game: AbstractGame[MyState]) -> None:
     )
 
 
-def my_other_passage(game: AbstractGame[MyState], msg: str) -> None:
+def my_other_passage(game: Game[MyState], msg: str) -> None:
     game.paragraph(f"Hi: <b>{game.state.hello}</b>")
     game.paragraph(
         "Fusce id pharetra lacus. Nullam quis dignissim sapien, pulvinar"
@@ -67,7 +66,7 @@ def my_other_passage(game: AbstractGame[MyState], msg: str) -> None:
     )
 
 
-def display_stuff(game: AbstractGame[MyState], msg: str) -> None:
+def display_stuff(game: Game[MyState], msg: str) -> None:
     cols = game.columns(3, ["", "Hello", ""])
     for col in cols:
         col.paragraph("Hi")
