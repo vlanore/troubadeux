@@ -5,10 +5,10 @@ from typing import TypeVar
 import jsonpickle as jsp
 
 import troubadour.backend as be
-from troubadour.definitions import AbstractGame, Eid
+from troubadour.definitions import Game, Eid
 
 
-def save_game(game: AbstractGame) -> None:
+def save_game(game: Game) -> None:
     # store in local memory
     be.local_storage["troubadour_state"] = game
 
@@ -16,13 +16,13 @@ def save_game(game: AbstractGame) -> None:
     setup_export_button(game)
 
 
-def setup_export_button(game: AbstractGame) -> None:
+def setup_export_button(game: Game) -> None:
     json_source = jsp.encode(game)
     assert json_source is not None
     be.file_download_button(Eid("export"), json_source, "troubadour.json")
 
 
-T = TypeVar("T", bound=AbstractGame)
+T = TypeVar("T", bound=Game)
 
 
 def setup_import_button(game_type: type[T]) -> None:

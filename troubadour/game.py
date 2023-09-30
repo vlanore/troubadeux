@@ -6,8 +6,8 @@ from typing import Callable, TypeVar
 
 import troubadour.backend as be
 import troubadour.save as sv
-from troubadour.definitions import AbstractGame, Continuation, Output, Target, Eid, Lid
-from troubadour.unique_id import get_unique_element_id
+from troubadour.definitions import Continuation, Eid, Game, Lid, Output, Target
+from troubadour.unique_id import IdProvider, get_unique_element_id
 
 T = TypeVar("T")
 
@@ -15,7 +15,7 @@ T = TypeVar("T")
 @dataclass
 class Element(Output):
     local_id: Lid
-    game: "Game"
+    game: "GameImpl"
 
     def paragraph(self, html: str = "", css: dict[str, str] | None = None) -> "Element":
         return self.game.paragraph(html, css=css, target=self.local_id)
@@ -36,6 +36,9 @@ class Element(Output):
 
     def continuation(self, continuation: Continuation) -> None:
         self.game.continuation(continuation, target=self.local_id)
+
+    def continuations(self, *continuations: Continuation) -> None:
+        self.game.continuations(*continuations, target=self.local_id)
 
     def columns(self, nb_col: int, html: None | list[str]) -> list[Output]:
         return self.game.columns(nb_col, html, target=self.local_id)
@@ -85,25 +88,24 @@ class PassageOutput:
 @dataclass
 class PassageContext:
     output: PassageOutput = field(default_factory=PassageOutput)
-    next_lid: int = 0
     lid_to_eid: dict[Lid, Eid] = field(default_factory=dict)
+    _id_provider: IdProvider = field(default_factory=IdProvider)
 
     def new_lid(self) -> Lid:
-        result = self.next_lid
-        self.next_lid += 1
-        return Lid(result)
+        return Lid(self._id_provider.get())
 
 
 @dataclass
-class Game(AbstractGame[T]):
+class GameImpl(Game[T]):
+    """The core troubadour class: encapsulates game and output state and provides
+    methods to output text. All passages should take a Game as first parameter and
+    the class method `run` should be called to run the game."""
+
     state: T
     max_output_len: int = 15
     _output: list[PassageOutput] = field(default_factory=list)
     _current_passage: PassageContext = field(default_factory=PassageContext)
     _last_passage: Eid | None = None
-
-    def print(self, html: str, target: Target = None) -> None:
-        self._current_passage.output.contents.append(RawHTML(html, target))
 
     def paragraph(
         self, html: str = "", css: dict[str, str] | None = None, target: Target = None
@@ -200,40 +202,6 @@ class Game(AbstractGame[T]):
         self._render_passage(self._output[-1])
         be.scroll_to_bottom(Eid("output-container"))
 
-    @classmethod
-    def cancel_dialog(cls, game: "Game") -> None:
-        game._render()  # pylint: disable=W0212
-
-    @classmethod
-    def run(
-        cls, StateCls: type, start_passage: Callable  # pylint: disable=C0103
-    ) -> None:
-        if not sv.state_exists():
-            game = Game(StateCls())
-            game.run_passage(start_passage)
-        else:
-            try:
-                game = sv.load_game(Game)
-                game._render()  # pylint: disable=W0212
-            except Exception:  # pylint: disable=W0718
-                be.insert_end(
-                    Eid("output"),
-                    (
-                        "<h1> Something went wrong during loading</h1>"
-                        "<p>You can try resetting the game "
-                        "(this will remove all progress).</p>"
-                    ),
-                )
-                sv.setup_reset_button()
-                be.remove(Eid("import-label"))
-                be.remove(Eid("export"))
-                return
-
-        # setting up buttons
-        sv.setup_export_button(game)
-        sv.setup_import_button(Game)
-        sv.setup_reset_button()
-
     def _trim_output(self) -> None:
         if len(self._output) > self.max_output_len:
             trim_index = -self.max_output_len
@@ -268,3 +236,42 @@ class Game(AbstractGame[T]):
         self._current_passage = PassageContext()
         self._trim_output()
         sv.save_game(self)
+
+
+def run_game(StateCls: type, start_passage: Callable) -> None:  # pylint: disable=C0103
+    """Depending on the presence of a game state in local storage, either load from
+    storage or start a new game at passage `start_passage` with starting state
+    `StateCls`.
+
+    Args:
+        `StateCls` (`type`): state class to instantiate (should support 0 params) to
+            start a new game.
+        `start_passage` (`Callable`): passage to run at the start of the new game.
+    """
+    if not sv.state_exists():  # if there is no state in storage, start new game
+        game = GameImpl(StateCls())
+        game.run_passage(start_passage)
+    else:  # otherwise try to start from stored state
+        try:
+            game = sv.load_game(GameImpl)
+            game._render()  # pylint: disable=W0212
+        except Exception:  # pylint: disable=W0718
+            # if something went wrong during loading, display a massage and offer
+            # the option to restart
+            be.insert_end(
+                Eid("output"),
+                (
+                    "<h1> Something went wrong during loading</h1>"
+                    "<p>You can try resetting the game "
+                    "(this will remove all progress).</p>"
+                ),
+            )
+            sv.setup_reset_button()
+            be.remove(Eid("import-label"))
+            be.remove(Eid("export"))
+            return  # return to avoid setting up import/export buttons
+
+    # setting up buttons
+    sv.setup_export_button(game)
+    sv.setup_import_button(GameImpl)
+    sv.setup_reset_button()

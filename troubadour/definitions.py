@@ -16,7 +16,7 @@ class Continuation(Protocol):
 
     def setup(
         self,
-        game: "AbstractGame",
+        game: "Game",
         target: "Eid" = Eid("output"),
         disabled: bool = False,
     ) -> None:
@@ -41,6 +41,9 @@ class Output(Protocol):
     def continuation(self, continuation: Continuation) -> None:
         ...
 
+    def continuations(self, *continuations: Continuation) -> None:
+        ...
+
     def columns(self, nb_col: int, html: None | list[str]) -> list["Output"]:
         ...
 
@@ -49,7 +52,7 @@ T = TypeVar("T")
 
 
 @runtime_checkable
-class AbstractGame(Output, Protocol, Generic[T]):
+class Game(Output, Protocol, Generic[T]):
     state: T
 
     def run_passage(

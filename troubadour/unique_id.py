@@ -6,7 +6,7 @@ from troubadour.definitions import Eid
 
 
 @dataclass
-class _IdProvider:
+class IdProvider:
     "Class that provides unique ints on demand through its `get` method."
     next_id: int = 0
 
@@ -17,7 +17,7 @@ class _IdProvider:
         return result
 
 
-_global_provider = _IdProvider()
+_global_provider = IdProvider()
 "Global id provider."
 
 

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-import troubadour.game as tg
+import troubadour as tbd
 
 
 @dataclass
@@ -8,8 +8,8 @@ class MyState:
     txt: str = "Hello world"
 
 
-def intro(game: tg.Game[MyState]) -> None:
-    game.print("Hello world")
+def intro(game: tbd.Game[MyState]) -> None:
+    game.paragraph("Hello world")
 
 
-tg.Game.run(MyState, intro)
+tbd.run_game(MyState, intro)

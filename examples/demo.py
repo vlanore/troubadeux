@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from troubadour import Button, TextButton, Game
+from troubadour import Button, Game, TextButton, run_game
 
 
 @dataclass
@@ -79,4 +79,4 @@ def display_stuff(game: Game[MyState], msg: str) -> None:
     game.continuations(Button("Click", my_other_passage, dict(msg="hello world")))
 
 
-Game.run(MyState, intro)
+run_game(MyState, intro)
