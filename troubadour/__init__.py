@@ -3,7 +3,6 @@
 try:
     from troubadour.continuations import (  # noqa: F401
         Button,
-        InterfaceSequence,
         TextButton,
     )
     from troubadour.definitions import Game  # noqa: F401
@@ -13,7 +12,6 @@ try:
         "Game",
         "Button",
         "TextButton",
-        "InterfaceSequence",
         "run_game",
     ]
 except ImportError:  # if we're not in the browser

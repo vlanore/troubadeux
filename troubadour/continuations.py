@@ -1,4 +1,4 @@
-"Implements a series of simple continuations, such as button and simple text fields."
+"Implements a series of simple continuations, such as buttons and simple text fields."
 
 from dataclasses import dataclass, field
 from typing import Any, Callable
@@ -6,17 +6,6 @@ from typing import Any, Callable
 import troubadour.backend as be
 from troubadour.definitions import Game, Continuation, Eid
 from troubadour.unique_id import get_unique_element_id
-
-
-class InterfaceSequence(Continuation):
-    def __init__(self, *continuations: Continuation):
-        self.lst = [*continuations]
-
-    def setup(
-        self, game: Game, target: Eid = Eid("output"), disabled: bool = False
-    ) -> None:
-        for cont in self.lst:
-            cont.setup(game, target, disabled)
 
 
 @dataclass

@@ -88,7 +88,6 @@ class PassageOutput:
 @dataclass
 class PassageContext:
     output: PassageOutput = field(default_factory=PassageOutput)
-    next_lid: int = 0
     lid_to_eid: dict[Lid, Eid] = field(default_factory=dict)
     _id_provider: IdProvider = field(default_factory=IdProvider)
 
